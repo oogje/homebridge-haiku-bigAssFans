@@ -1,19 +1,19 @@
 <span align="center">
-<h1 align="center"><img src="https://raw.githubusercontent.com/oogje/homebridge-i6-bigAssFans/main/IMG_3799.jpg"/></h1>
+<h1 align="center"><img src="https://raw.githubusercontent.com/oogje/homebridge-haiku-bigAssFans/main/IMG_3799.jpg"/></h1>
 
-## homebridge-i6-bigassfans
+## homebridge-haiku-bigassfans
 
-<!-- [![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins) -->
-<!-- [![homebridge-miot](https://badgen.net/npm/v/homebridge-bigassfans-i6?icon=npm)](https://www.npmjs.com/package/homebridge-bigassfans-i6)
-[![mit-license](https://badgen.net/npm/license/lodash)](https://github.com/oogje/homebridge-bigassfans-i6/blob/master/LICENSE)
+[![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
+<!-- [![homebridge-miot](https://badgen.net/npm/v/homebridge-bigassfans-haiku?icon=npm)](https://www.npmjs.com/package/homebridge-bigassfans-haiku)
+[![mit-license](https://badgen.net/npm/license/lodash)](https://github.com/oogje/homebridge-bigassfans-haiku/blob/master/LICENSE)
 <!-- [![follow-me-on-twitter](https://badgen.net/twitter/follow/merdok_dev?icon=twitter)](https://twitter.com/merdok_dev) -->
 <!-- [![join-discord](https://badgen.net/badge/icon/discord?icon=discord&label=homebridge-xiaomi-fan)](https://discord.gg/AFYUZbk) -->
 
 </span>
 
-`homebridge-i6-bigassfans` is a plugin for Homebridge which allows you to control a Big Ass Fans model i6.
+`homebridge-haiku-bigassfans` is a plugin for Homebridge which allows you to control a Big Ass Fans model Haiku.
 
-This works with my LED equipped i6 fan.  I'm hoping it works for you.  I created the plugin by observing network traffic and for the 
+This might with your LED equipped Haiku fan.  I created the plugin by observing network traffic and for the 
 most part guessing the format of the binary messages that were sent to and from the fan.  Of the appoximately 80 unique 
 message types I've seen, I think I know what about half of them probably mean.
 
@@ -26,26 +26,26 @@ issue a command (e.g., turn on the light) as oppposed to the periodic probe mess
 ### Features
 
 * Turn fan and/or light on or off!
-* Change speed, and direction (keep in mind Big Ass Fans frowns on reversing speed.)
+<!-- * Change speed, and direction (keep in mind Big Ass Fans frowns on reversing speed.)
 * Change brightness level of LED lamp.
 * See the fan's bluetooth remote's temperature and humidity sensors.
 * Turn Whoosh Mode on or off.
 * Turn Dim to Warm on or off.
-* Turn fan's Auto mode on or off.
+* Turn fan's Auto mode on or off. -->
 
 ### Installation
 
-If you are not already running homebridge you'll find how to install it in the homebridge [documentation](https://github.com/homebridge/homebridge#readme).  After you install homebridge you can install and configure the `homebridge-i6-bigassfans` plugin through `homebridge-config-ui-x` using a command line and editor as described below.
+If you are not already running homebridge you'll find how to install it in the homebridge [documentation](https://github.com/homebridge/homebridge#readme).  After you install homebridge you can install and configure the `homebridge-haiku-bigassfans` plugin through `homebridge-config-ui-x` using a command line and editor as described below.
 
-#### Install homebridge-i6-bigassfans:
+#### Install homebridge-haiku-bigassfans:
 
 ```sh
-sudo npm install -g homebridge-i6-bigassfans@beta
+sudo npm install -g homebridge-haiku-bigassfans@beta
 ```
 
 #### Configuration
 
-Add the `BigAssFans-i6` platform in `config.json` in your home directory inside `.homebridge`.
+Add the `BigAssFans-haiku` platform in `config.json` in your home directory inside `.homebridge`.
 
 Add your fan(s) in the `fans` array.
 
@@ -55,7 +55,7 @@ Example configuration:
 {
   "platforms": [
     {
-      "platform": "BigAssFans-i6",
+      "platform": "BigAssFans-haiku",
             "fans": [
                 {
                     "name": "Big Fan",
@@ -72,7 +72,7 @@ Example configuration:
 #### Platform configuration fields
 
 * `platform` [required]
-Should always be **"BigAssFans-i6"**.
+Should always be **"BigAssFans-haiku"**.
 * `fans` [required]
 A list of your fans.
 

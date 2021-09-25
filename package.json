@@ -1,16 +1,16 @@
 {
   "private": false,
-  "displayName": "Big Ass Fans i6",
-  "name": "homebridge-i6-bigassfans",
-  "version": "0.2.1",
-  "description": "Homebridge plugin for Big Ass Fans model i6.",
+  "displayName": "Big Ass Fans Haiku",
+  "name": "homebridge-haiku-bigassfans",
+  "version": "0.3.1",
+  "description": "Homebridge plugin for Big Ass Fans model Haiku.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/oogje/homebridge-i6-bigAssFans"
+    "url": "https://github.com/oogje/homebridge-haiku-bigAssFans"
   },
   "bugs": {
-    "url": "https://github.com/oogje/homebridge-i6-bigAssFans/issues"
+    "url": "https://github.com/oogje/homebridge-haiku-bigAssFans/issues"
   },
   "engines": {
     "node": ">=10.17.0",
@@ -28,7 +28,7 @@
     "big-ass-fans",
     "ceiling-fan",
     "fan",
-    "i6"
+    "haiku"
   ],
   "devDependencies": {
     "@types/node": "^14.14.31",
