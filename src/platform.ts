@@ -1,14 +1,14 @@
 import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, Service, Characteristic } from 'homebridge';
 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
-import { BigAssFans_i6PlatformAccessory } from './platformAccessory';
+import { BigAssFans_haikuPlatformAccessory } from './platformAccessory';
 
 /**
  * HomebridgePlatform
  * This class is the main constructor for your plugin, this is where you should
  * parse the user config and discover/register accessories with Homebridge.
  */
-export class BigAssFans_i6Platform implements DynamicPlatformPlugin {
+export class BigAssFans_haikuPlatform implements DynamicPlatformPlugin {
   public readonly Service: typeof Service = this.api.hap.Service;
   public readonly Characteristic: typeof Characteristic = this.api.hap.Characteristic;
 
@@ -54,7 +54,7 @@ export class BigAssFans_i6Platform implements DynamicPlatformPlugin {
     if (this.config.fans && Array.isArray(this.config.fans)) {
       for (const fan of this.config.fans) {
         if (fan) {
-          i6FanSetUp(this, fan);
+          haikuFanSetUp(this, fan);
         }
       }
     } else if (this.config.fans) {
@@ -68,7 +68,7 @@ export class BigAssFans_i6Platform implements DynamicPlatformPlugin {
       this.log.info('-------------------------------------------');
     }
 
-    function i6FanSetUp(platform: BigAssFans_i6Platform, fan) {
+    function haikuFanSetUp(platform: BigAssFans_haikuPlatform, fan) {
       // check if we have mandatory device info
       try {
         if (!fan.name) {
@@ -81,14 +81,14 @@ export class BigAssFans_i6Platform implements DynamicPlatformPlugin {
           throw new Error('"mac" is required but not defined for ${fan.name}!');
         }
       } catch (error) {
-        platform.log.error(error);
+        platform.log.error((error as Error).message);
         platform.log.error('Failed to create platform device, missing mandatory information!');
         platform.log.error('Please check your device config!');
         return;
       }
 
-      checkDevice(platform, fan.ip, (client, data: Buffer) => {
-        if (data[0] !== 0xc0) {
+      checkDevice(platform, fan.ip, (client: net.Socket, data: Buffer) => {
+        if (data.toString()[0] !== '(') {
           return;
         }
         // generate a unique id for the accessory this should be generated from
@@ -121,7 +121,7 @@ export class BigAssFans_i6Platform implements DynamicPlatformPlugin {
 
           // create the accessory handler for the restored accessory
           // this is imported from `platformAccessory.ts`
-          new BigAssFans_i6PlatformAccessory(platform, existingAccessory);
+          new BigAssFans_haikuPlatformAccessory(platform, existingAccessory);
 
           // it is possible to remove platform accessories at any time using `api.unregisterPlatformAccessories`, eg.:
           // remove platform accessories when no longer present
@@ -140,7 +140,7 @@ export class BigAssFans_i6Platform implements DynamicPlatformPlugin {
 
           // create the accessory handler for the newly create accessory
           // this is imported from `platformAccessory.ts`
-          new BigAssFans_i6PlatformAccessory(platform, accessory);
+          new BigAssFans_haikuPlatformAccessory(platform, accessory);
 
           // link the accessory to your platform
           platform.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -152,17 +152,20 @@ export class BigAssFans_i6Platform implements DynamicPlatformPlugin {
 
 import net = require('net');
 let timeoutID: NodeJS.Timeout;
-function checkDevice(platform: BigAssFans_i6Platform, ip: string, cb) {
+function checkDevice(platform: BigAssFans_haikuPlatform, ip: string, cb) {
+  platform.log.debug("attempt to connect to: ", ip);
   const client = net.connect(31415, ip, () => {
-    const b = Buffer.from([0xc0, 0x12, 0x02, 0x1a, 0x00, 0xc0]);
-    client.write(b);
+    // const b = Buffer.from([0xc0, 0x12, 0x02, 0x1a, 0x00, 0xc0]);
+    // client.write(b);
+    platform.log.debug("connected");
+    client.destroy();
 
-    timeoutID = setTimeout((log: Logger, ip: string, client) => {
-      client.destroy();
-      log.error('Fan configured with ip: ' + ip +
-          ' is not responding to our probe.  This could happen if the fan model is not i6, but for instance Haiku.');
-    }, 30000, platform.log, ip, client);
-
+    // timeoutID = setTimeout((log: Logger, ip: string, client) => {
+    //   client.destroy();
+    //   log.error('Fan configured with ip: ' + ip +
+    //       ' is not responding to our probe.  This could happen if the fan model is not i6, but for instance Haiku.');
+    // }, 30000, platform.log, ip, client);
+    cb(client, "(");
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -184,13 +187,14 @@ function checkDevice(platform: BigAssFans_i6Platform, ip: string, cb) {
     }
   });
 
-  client.on('data', (data: Buffer) => {
-    clearTimeout(timeoutID);
-    client.destroy();
-    if (data[0] === 0xc0 && data[1] === 0x12) {
-      cb(client, data);
-    } else {
-      cb(client, Buffer.from([0x00]));
-    }
-  });
+  // client.on('data', (data: Buffer) => {
+  //   clearTimeout(timeoutID);
+  //   client.destroy();
+  //   if (data[0] === 0xc0 && data[1] === 0x12) {
+  //     cb(client, data);
+  //   } else {
+  //     cb(client, Buffer.from([0x00]));
+  //   }
+  // });
+  platform.log.debug("just hangin'");
 }

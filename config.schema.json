@@ -1,9 +1,9 @@
 {
-  "pluginAlias": "BigAssFans-i6",
+  "pluginAlias": "BigAssFans-Haiku",
   "pluginType": "platform",
   "singular": true,
-  "headerDisplay": "Homebridge plugin for Big Ass Fans i6",
-  "footerDisplay": "For a detailed description, see the [README](https://github.com/oogje/homebridge-i6-bigassfans#platform-configuration-fields)",
+  "headerDisplay": "Homebridge plugin for Big Ass Fans Haiku",
+  "footerDisplay": "For a detailed description, see the [README](https://github.com/oogje/homebridge-haiku-bigassfans#platform-configuration-fields)",
   "schema": {
     "type": "object",
     "properties": {
@@ -19,7 +19,7 @@
                 "type": "string",
                 "minLength": 1,
                 "required": true,
-                "default": "i6 fan"
+                "default": "haiku fan"
             },
             "ip": {
               "title": "Fan IP address",

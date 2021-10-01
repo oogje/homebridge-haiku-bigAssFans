@@ -1,7 +1,7 @@
 /* eslint-disable no-multi-spaces */
 
 import { Service, PlatformAccessory, CharacteristicValue, Logger } from 'homebridge';
-import { BigAssFans_i6Platform } from './platform';
+import { BigAssFans_haikuPlatform } from './platform';
 
 // https://stackoverflow.com/questions/38875401/getting-error-ts2304-cannot-find-name-buffer
 declare const Buffer; // this seems to ward off typescripts whining about buffer methods such as length, etc.
@@ -24,7 +24,7 @@ const PROPERTYHANDLERFUNCTION = 1;
 
 const ONEBYTEHEADER = [0xc0, 0x12, 0x07, 0x12, 0x05, 0x1a, 0x03];
 
-export class BigAssFans_i6PlatformAccessory {
+export class BigAssFans_haikuPlatformAccessory {
   public fanService!: Service;
   public lightBulbService!: Service;
   public humiditySensorService!: Service;
@@ -59,7 +59,7 @@ export class BigAssFans_i6PlatformAccessory {
   public MAC: string;
   public Name = 'naamloos';
   public SSID = 'apname';
-  public Model = 'i6';
+  public Model = 'haiku';
 
   public debugLevel = 1;
 
@@ -78,7 +78,7 @@ export class BigAssFans_i6PlatformAccessory {
   propertiesTable = getPropertiesArray();
 
   constructor(
-    public readonly platform: BigAssFans_i6Platform,
+    public readonly platform: BigAssFans_haikuPlatform,
     private readonly accessory: PlatformAccessory,
   ) {
     hbLog = platform.log;
@@ -117,15 +117,15 @@ export class BigAssFans_i6PlatformAccessory {
       }
     }
 
-    if (accessory.context.device.whoosh) {
-      this.showWhooshSwitch = true; // defaults to false in property initialization
-    }
-    if (accessory.context.device.dimToWarm) {
-      this.showDimToWarmSwitch = true; // defaults to false in property initialization
-    }
-    if (accessory.context.device.fanAuto) {
-      this.showFanAutoSwitch = true; // defaults to false in property initialization
-    }
+    // if (accessory.context.device.whoosh) {
+    //   this.showWhooshSwitch = true; // defaults to false in property initialization
+    // }
+    // if (accessory.context.device.dimToWarm) {
+    //   this.showDimToWarmSwitch = true; // defaults to false in property initialization
+    // }
+    // if (accessory.context.device.fanAuto) {
+    //   this.showFanAutoSwitch = true; // defaults to false in property initialization
+    // }
 
     /**
     * set accessory information
@@ -136,7 +136,7 @@ export class BigAssFans_i6PlatformAccessory {
 
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'Big Ass Fans')
-      .setCharacteristic(this.platform.Characteristic.Model, 'i6')
+      .setCharacteristic(this.platform.Characteristic.Model, 'haiku')
       .setCharacteristic(this.platform.Characteristic.SerialNumber, this.MAC);
 
     // Fan
@@ -148,13 +148,13 @@ export class BigAssFans_i6PlatformAccessory {
       .onSet(this.setFanOnState.bind(this))
       .onGet(this.getFanOnState.bind(this));
 
-    this.fanService.getCharacteristic(this.platform.Characteristic.RotationSpeed)
-      .onSet(this.setRotationSpeed.bind(this))
-      .onGet(this.getRotationSpeed.bind(this));
+    // this.fanService.getCharacteristic(this.platform.Characteristic.RotationSpeed)
+    //   .onSet(this.setRotationSpeed.bind(this))
+    //   .onGet(this.getRotationSpeed.bind(this));
 
-    this.fanService.getCharacteristic(this.platform.Characteristic.RotationDirection)
-      .onSet(this.setRotationDirection.bind(this))
-      .onGet(this.getRotationDirection.bind(this));
+    // this.fanService.getCharacteristic(this.platform.Characteristic.RotationDirection)
+    //   .onSet(this.setRotationDirection.bind(this))
+    //   .onGet(this.getRotationDirection.bind(this));
 
     // Light Bulb
     this.lightBulbService = this.accessory.getService(this.platform.Service.Lightbulb) ||
@@ -166,77 +166,77 @@ export class BigAssFans_i6PlatformAccessory {
       .onSet(this.setLightOnState.bind(this))                // SET - bind to the `setLightOnState` method below
       .onGet(this.getLightOnState.bind(this));               // GET - bind to the `getOn` method below
 
-    this.lightBulbService.getCharacteristic(this.platform.Characteristic.Brightness)
-      .onSet(this.setBrightness.bind(this))
-      .onGet(this.getBrightness.bind(this));
+    // this.lightBulbService.getCharacteristic(this.platform.Characteristic.Brightness)
+    //   .onSet(this.setBrightness.bind(this))
+    //   .onGet(this.getBrightness.bind(this));
 
-    this.lightBulbService.getCharacteristic(this.platform.Characteristic.ColorTemperature)
-      .onSet(this.setColorTemperature.bind(this))
-      .onGet(this.getColorTemperature.bind(this));
+    // this.lightBulbService.getCharacteristic(this.platform.Characteristic.ColorTemperature)
+    //   .onSet(this.setColorTemperature.bind(this))
+    //   .onGet(this.getColorTemperature.bind(this));
 
     // Current Temperature
-    this.temperatureSensorService = this.accessory.getService(this.platform.Service.TemperatureSensor) ||
-      this.accessory.addService(this.platform.Service.TemperatureSensor);
-    accessoryName = capitalizeName ?  ' Temperature' : ' temperature';
-    this.temperatureSensorService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.name + accessoryName);
-    this.temperatureSensorService.getCharacteristic(this.platform.Characteristic.CurrentTemperature)
-      .onGet(this.getCurrentTemperature.bind(this));
+    // this.temperatureSensorService = this.accessory.getService(this.platform.Service.TemperatureSensor) ||
+    //   this.accessory.addService(this.platform.Service.TemperatureSensor);
+    // accessoryName = capitalizeName ?  ' Temperature' : ' temperature';
+    // this.temperatureSensorService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.name + accessoryName);
+    // this.temperatureSensorService.getCharacteristic(this.platform.Characteristic.CurrentTemperature)
+    //   .onGet(this.getCurrentTemperature.bind(this));
 
     // Current Relative Humidity
-    this.humiditySensorService = this.accessory.getService(this.platform.Service.HumiditySensor) ||
-      this.accessory.addService(this.platform.Service.HumiditySensor);
-    accessoryName = capitalizeName ?  ' Humidity' : ' humidity';
-    this.humiditySensorService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.name + accessoryName);
+    // this.humiditySensorService = this.accessory.getService(this.platform.Service.HumiditySensor) ||
+    //   this.accessory.addService(this.platform.Service.HumiditySensor);
+    // accessoryName = capitalizeName ?  ' Humidity' : ' humidity';
+    // this.humiditySensorService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.name + accessoryName);
 
-    this.humiditySensorService.getCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity)
-      .onGet(this.getCurrentRelativeHumidity.bind(this));
+    // this.humiditySensorService.getCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity)
+    //   .onGet(this.getCurrentRelativeHumidity.bind(this));
 
     // Switches
-    if (this.showWhooshSwitch) {
-      this.whooshSwitchService = this.accessory.getService('whooshSwitch') ||
-        this.accessory.addService(this.platform.Service.Switch, 'whooshSwitch', 'switch-1');
-      accessoryName = capitalizeName ?  ' Whoosh' : ' whoosh';
-      this.whooshSwitchService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.name + accessoryName);
+    // if (this.showWhooshSwitch) {
+    //   this.whooshSwitchService = this.accessory.getService('whooshSwitch') ||
+    //     this.accessory.addService(this.platform.Service.Switch, 'whooshSwitch', 'switch-1');
+    //   accessoryName = capitalizeName ?  ' Whoosh' : ' whoosh';
+    //   this.whooshSwitchService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.name + accessoryName);
 
-      this.whooshSwitchService.getCharacteristic(this.platform.Characteristic.On)
-        .onSet(this.setWhooshSwitchOnState.bind(this))
-        .onGet(this.getWhooshSwitchOnState.bind(this));
-    } else {
-      const service = this.accessory.getService('whooshSwitch');
-      if (service) {
-        this.accessory.removeService(service);
-      }
-    }
-    if (this.showDimToWarmSwitch) {
-      this.dimToWarmSwitchService = this.accessory.getService('dimToWarmSwitch') ||
-        this.accessory.addService(this.platform.Service.Switch, 'dimToWarmSwitch', 'switch-2');
-      accessoryName = capitalizeName ?  ' Dim to Warm' : ' dim to warm';
-      this.dimToWarmSwitchService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.name + accessoryName);
+    //   this.whooshSwitchService.getCharacteristic(this.platform.Characteristic.On)
+    //     .onSet(this.setWhooshSwitchOnState.bind(this))
+    //     .onGet(this.getWhooshSwitchOnState.bind(this));
+    // } else {
+    //   const service = this.accessory.getService('whooshSwitch');
+    //   if (service) {
+    //     this.accessory.removeService(service);
+    //   }
+    // }
+    // if (this.showDimToWarmSwitch) {
+    //   this.dimToWarmSwitchService = this.accessory.getService('dimToWarmSwitch') ||
+    //     this.accessory.addService(this.platform.Service.Switch, 'dimToWarmSwitch', 'switch-2');
+    //   accessoryName = capitalizeName ?  ' Dim to Warm' : ' dim to warm';
+    //   this.dimToWarmSwitchService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.name + accessoryName);
 
-      this.dimToWarmSwitchService.getCharacteristic(this.platform.Characteristic.On)
-        .onSet(this.setDimToWarmSwitchOnState.bind(this))
-        .onGet(this.getDimToWarmSwitchOnState.bind(this));
-    } else {
-      const service = this.accessory.getService('dimToWarmSwitch');
-      if (service) {
-        this.accessory.removeService(service);
-      }
-    }
-    if (this.showFanAutoSwitch) {
-      this.fanAutoSwitchService = this.accessory.getService('fanAutoSwitch') ||
-        this.accessory.addService(this.platform.Service.Switch, 'fanAutoSwitch', 'switch-3');
-      accessoryName = capitalizeName ?  ' Auto' : ' auto';
-      this.fanAutoSwitchService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.name + accessoryName);
+    //   this.dimToWarmSwitchService.getCharacteristic(this.platform.Characteristic.On)
+    //     .onSet(this.setDimToWarmSwitchOnState.bind(this))
+    //     .onGet(this.getDimToWarmSwitchOnState.bind(this));
+    // } else {
+    //   const service = this.accessory.getService('dimToWarmSwitch');
+    //   if (service) {
+    //     this.accessory.removeService(service);
+    //   }
+    // }
+    // if (this.showFanAutoSwitch) {
+    //   this.fanAutoSwitchService = this.accessory.getService('fanAutoSwitch') ||
+    //     this.accessory.addService(this.platform.Service.Switch, 'fanAutoSwitch', 'switch-3');
+    //   accessoryName = capitalizeName ?  ' Auto' : ' auto';
+    //   this.fanAutoSwitchService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.name + accessoryName);
 
-      this.fanAutoSwitchService.getCharacteristic(this.platform.Characteristic.On)
-        .onSet(this.setFanAutoSwitchOnState.bind(this))
-        .onGet(this.getFanAutoSwitchOnState.bind(this));
-    } else {
-      const service = this.accessory.getService('fanAutoSwitch');
-      if (service) {
-        this.accessory.removeService(service);
-      }
-    }
+    //   this.fanAutoSwitchService.getCharacteristic(this.platform.Characteristic.On)
+    //     .onSet(this.setFanAutoSwitchOnState.bind(this))
+    //     .onGet(this.getFanAutoSwitchOnState.bind(this));
+    // } else {
+    //   const service = this.accessory.getService('fanAutoSwitch');
+    //   if (service) {
+    //     this.accessory.removeService(service);
+    //   }
+    // }
 
     /**
     * open the fan's communication port, establish the data and error callbacks, send the initialization sequence  and start
@@ -255,7 +255,8 @@ export class BigAssFans_i6PlatformAccessory {
     debugLog('characteristics',  2, 'Set Characteristic Light On -> ' + value);
     this.lightStates.On = value as boolean;
     clientWrite(this.client,
-      Buffer.from(ONEBYTEHEADER.concat([0xa0, 0x04, (this.lightStates.On ? 0x01 : 0x00), 0xc0])));
+      // Buffer.from(ONEBYTEHEADER.concat([0xa0, 0x04, (this.lightStates.On ? 0x01 : 0x00), 0xc0])));
+      Buffer.from("<Haiku;LIGHT;PWR;".concat((this.lightStates.On ? "ON" : "OFF"), ">")));
   }
 
   async getLightOnState(): Promise<CharacteristicValue> {
@@ -323,7 +324,11 @@ export class BigAssFans_i6PlatformAccessory {
       return;
     }
 
-    clientWrite(this.client, Buffer.from(ONEBYTEHEADER.concat([0xd8, 0x02, (this.fanStates.On ? 0x01 : 0x00), 0xc0])));
+    // clientWrite(this.client, Buffer.from(ONEBYTEHEADER.concat([0xd8, 0x02, (this.fanStates.On ? 0x01 : 0x00), 0xc0])));
+    clientWrite(this.client,
+      // Buffer.from(ONEBYTEHEADER.concat([0xa0, 0x04, (this.lightStates.On ? 0x01 : 0x00), 0xc0])));
+      Buffer.from("<Haiku;FAN;PWR;".concat((this.lightStates.On ? "ON" : "OFF"), ">")));
+
   }
 
   async getFanOnState(): Promise<CharacteristicValue> {
@@ -442,15 +447,18 @@ export class BigAssFans_i6PlatformAccessory {
 }
 
 import net = require('net');
+import { privateEncrypt } from 'crypto';
+import { debug } from 'console';
 /**
 * connect to the fan, send an initialization message, establish the error and data callbacks and start a keep-alive interval timer.
 */
-function networkSetup(platformAccessory: BigAssFans_i6PlatformAccessory) {
+function networkSetup(platformAccessory: BigAssFans_haikuPlatformAccessory) {
   platformAccessory.client = net.connect(31415, platformAccessory.IP, () => {
     debugLog('progress', 1, 'connected!');
     platformAccessory.client.setKeepAlive(true);
 
-    clientWrite(platformAccessory.client, Buffer.from([0xc0, 0x12, 0x02, 0x1a, 0x00, 0xc0]));
+    // clientWrite(platformAccessory.client, Buffer.from([0xc0, 0x12, 0x02, 0x1a, 0x00, 0xc0]));
+    // clientWrite(platformAccessory.client, Buffer.from("hello haiku fan"));
   });
 
   let errHandler;
@@ -492,7 +500,7 @@ function networkSetup(platformAccessory: BigAssFans_i6PlatformAccessory) {
   });
 
   // attempt to prevent the occassional socket reset.
-  // sending the mysterious code that the vendor app seems to send once every 15s but I'll go with every minute -  didn't prevent it.
+  // sending the mysterious code that the vendor app seems to send once every 15s but I'll go with every minute - didn't prevent it.
   // can try going to every 15 seconds like the vendor app seems to do. - didn't work
   // perhaps I need to call socket.setKeepAlive([enable][, initialDelay]) when I establish it above? - nope, didn't help
   // obviously, I don't understand this stuff.
@@ -500,180 +508,238 @@ function networkSetup(platformAccessory: BigAssFans_i6PlatformAccessory) {
   // then clear sailing for 1+ hours so far.
   setInterval(( )=> {
     if (platformAccessory.client !== undefined) {
-      clientWrite(platformAccessory.client, Buffer.from([0xc0, 0x12, 0x04, 0x1a, 0x02, 0x08, 0x03, 0xc0]));
+      // clientWrite(platformAccessory.client, Buffer.from([0xc0, 0x12, 0x04, 0x1a, 0x02, 0x08, 0x03, 0xc0]));
     } else {
       debugLog('network', 3, 'client undefined in setInterval callback');
     }
   }, 60000);
 }
 
-function onData(platformAccessory: BigAssFans_i6PlatformAccessory, data: Buffer) {
+function onData(platformAccessory: BigAssFans_haikuPlatformAccessory, data: Buffer) {
   debugLog('network', 11, 'raw data: ' + hexFormat(data));
   debugLog('network', 8, 'accessory client got: ' + data.length + ' bytes');
 
-  // break data into individual chunks bracketed by 0xc0
+  // break data into individual chunks bracketed by '('(0x28) and ')'(0x29)
   let startIndex = -1;
   let endIndex = -1;
   let numChunks = 0;
   const chunks: Buffer[] = [];
   for (let i = 0; i < data.length; i++) {
-    if (data[i] === 0xc0) {
+    if (data[i] === 0x28) {
       if (startIndex < 0) {
         startIndex = i;
         endIndex = -1;
-      } else {
-        endIndex = i;
-        chunks[numChunks] = data.subarray(startIndex, endIndex+1);
-        // this.platform.log.debug('start: ' + startIndex + ', end: ' + endIndex + ', length: ' + chunks[numChunks].length);
-        numChunks++;
-        startIndex = -1;
       }
+    } else if (data[i] === 0x29) {
+      endIndex = i;
+      chunks[numChunks] = data.subarray(startIndex, endIndex+1);
+      // this.platform.log.debug('start: ' + startIndex + ', end: ' + endIndex + ', length: ' + chunks[numChunks].length);
+      numChunks++;
+      startIndex = -1;
     }
   }
   // platform.log.debug('numChunks: ' + numChunks);
 
   // parse each chunk and issue any interesting updates to homekit.
   for (let i = 0; i < numChunks; i++) {
-    processFanMessage(platformAccessory, unstuff(chunks[i]));
+    // processFanMessage(platformAccessory, unstuff(chunks[i]));
+    processFanMessage(platformAccessory, chunks[i]);
   }
 }
 
-function processFanMessage(platformAccessory: BigAssFans_i6PlatformAccessory, data: typeof Buffer) {
+function processFanMessage(platformAccessory: BigAssFans_haikuPlatformAccessory, data: typeof Buffer) {
   const log = platformAccessory.platform.log;
   let len = 0;
   let propertyFields: typeof Buffer;
 
-  const rawChunk = data;
+// (Haiku;LIGHT;PWR;OFF)
+// (Haiku;LIGHT;LEVEL;ACTUAL;0)
 
-  if (data[0] !== 0xc0) {
-    log.warn('expected start of message chunk (0x0c), got: ' + hexFormat(data[0]));
-    debugLog('network', 3, 'rawChunk: ' + hexFormat(rawChunk));
-    return;
-  }
-  data = data.subarray(1); // remove 0xc0
+// keep an eye on removing the newline - need it for simulation testing but could guess trouble with real fan - time will tell
+  let messageArray = ("" + data).replace(/<|>|\(|\)|\n/g, "").split(";")
 
-  if (data[0] !== 0x12) {
-    log.warn('expected start of message header (0x12), got: ' + hexFormat(data[0]));
-    debugLog('network', 3, 'rawChunk: ' + hexFormat(rawChunk));
-    return;
-  }
-  data = data.subarray(1); // remove 0x12
+  let fanName = messageArray[0];
+  let component = messageArray[1];
+  let componentProperty = messageArray[2];
 
-  // accumulate remaining size (bigAssNumber)
-  let banArray:number[] = [];
-  while (data.length > 0 && data[0] !== 0x22) { // field separator
-    banArray.push(data[0]);
-    data = data.subarray(1); // remove the byte we just consumed
-  }
-  const remainingChunkSize = bigAssNumber(Buffer.from(banArray));
+  debugLog('newcode', 1, 'component: ' + component);
+  debugLog('newcode', 1, 'componentProperty: ' + component);
 
-  if (data.length !== (remainingChunkSize + 1)) { // add in the 0xc0
-    log.warn('this is not the chunk size we\'re looking for: ' + remainingChunkSize + ', actual: ' + data.length);
-    debugLog('network', 3, 'rawChunk: ' + hexFormat(rawChunk));
-    return;
-  }
-  if (data.length === 0 || data[0] !== 0x22) {
-    log.warn('not good.  apparently we ran off the end of the data buffer');
-    debugLog('network', 3, 'rawChunk: ' + hexFormat(rawChunk));
-    return;
-  }
-  data = data.subarray(1); // remove the field separator (0x22)
+  if (component == "LIGHT") {
+    if (componentProperty === "PWR") {
+      let propertyValue = messageArray[3];
 
-  // accumulate remaining size (bigAssNumber)
-  banArray = [];
-  while (data.length > 0 && (data[0] !== 0x12 && data[0] !== 0x1a)) {  // 0x12 or 0x1a, apparently neither can be part of a bigAssNumber?
-    banArray.push(data[0]);
-    data = data.subarray(1); // remove the byte we just consumed
-  }
-  const chunkSizeSansToken = bigAssNumber(Buffer.from(banArray));
+      debugLog('newcode', 1, 'propertyValue: ' + propertyValue);
 
-  if (data.length !== (chunkSizeSansToken + 73)) { // 73 - token length + 1 (0xc0)
-    log.warn('chunkSizeSansToken: ' + chunkSizeSansToken + 73 + ', not what we expected with data length: ' + data.length);
-    debugLog('network', 3, 'rawChunk: ' + hexFormat(rawChunk));
-    return;
-  }
+      // function lightOnState(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
+        // if (value === 2) {  // this means the light is in Auto mode -  we don't handle it yet
+        //   return;
+        // }
+      let pA = platformAccessory;
+      const onValue = (propertyValue === "ON" ? true : false);
+      pA.lightStates.On = onValue;
+      debugLog('characteristics', 2, 'update Light On: ' + pA.lightStates.On);
+      pA.lightBulbService.updateCharacteristic(pA.platform.Characteristic.On, pA.lightStates.On);
+      // }
+    }
+  } else if (component == "FAN") {
+    if (componentProperty === "PWR") {
+      let propertyValue = messageArray[3];
 
-  if (data[0] !== 0x12) { // then it must be 0x1a.
-    // let's see what happens if we just pass it on
-  }
-
-  /**
-  * pick out the property code and send it to the decode function to get the value from its
-  * coded field.  Then call the property's handler function to act on the message's contents (or not.)
-  */
-  while (data[0] !== 0xc0) {
-    if (data[0] === 0x28) { // 0x28 is the start of what looks like a token 72 bytes long followed by 0xc0 end of chunk.
-      if (data.length === 73) {
-        return;
-      } else {
-        debugLog('network', 2, 'surprise! token length was: ' + data.length);
+      let pA = platformAccessory;
+      // if (pA.showFanAutoSwitch) {
+      //   pA.fanAutoSwitchOn = (value === 2) ? true: false;
+      //   debugLog(['newcode', 'characteristics'], [1, 2], 'update fan auto: ' + pA.fanAutoSwitchOn);
+      //   pA.fanAutoSwitchService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanAutoSwitchOn);
+      // }
+    
+      // if (value === 2) {
+      //   // if (pA.fanStates.RotationSpeed > 0) {
+      //   //   pA.fanStates.On = true;
+      //   //   debugLog(['newcode', 'characteristics'], [1, 2], 'update FanOn:' + pA.fanStates.On + ' because (auto && speed > 0)');
+      //   //   pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
+      //   // }
+      // } else {
+        const onValue = (propertyValue === "ON" ? true : false);
+        pA.fanStates.On = onValue;
+        debugLog(['newcode', 'characteristics'], [1, 2], 'update FanOn: ' + pA.fanStates.On);
+        pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
       }
-    }
-    if (data[0] !== 0x12 && data[0] !== 0x1a) {
-      platformAccessory.platform.log.warn('expected 0x12|0x1a, got: ', hexFormat(data.subarray(0, 1)));
-      debugLog('network', 2, 'unexpected byte in chunk:  ' + hexFormat(data) + ' from: ' + hexFormat(rawChunk));
-      return;
-    }
-    data = data.subarray(1);  // remove the 'start of header' (0x12|0x1a) from the remaining data
-
-    len = data[0];
-    data = data.subarray(1);  // remove the 'length' byte from the remaining data
-
-    propertyFields = data.subarray(0, len); // this is the message - property code and value
-    data = data.subarray(len);  // remove the message from the remaining data
-
-    let hdrsize = 2; // most property headers are two bytes
-    // // but there are a few single-byte headers
-    // if (propertyFields[0] === 0x0a ||
-    //     propertyFields[0] === 0x22 ||
-    //     propertyFields[0] === 0x2a ||
-    //     propertyFields[0] === 0x32 ||
-    //     propertyFields[0] === 0x3a ||
-    //     propertyFields[0] === 0x42 ||
-    //     propertyFields[0] === 0x70 ||
-    //     propertyFields[0] === 0x78) {
-    //   hdrsize = 1;
     // }
-    if (platformAccessory.oneByteHeaders.includes(propertyFields[0])) {
-      hdrsize = 1;
-    }
-
-    const propertyCodeString = hexFormat(propertyFields.subarray(0, hdrsize));
-    const propertyValueField = propertyFields.subarray(hdrsize);
-
-    if (platformAccessory.propertiesTable[propertyCodeString] === undefined) {
-      platformAccessory.platform.log.warn('propertiesTable[' + propertyCodeString + '] === undefined');
-      continue;
-    }
-
-    const decodeValueFunction = platformAccessory.propertiesTable[propertyCodeString][DECODEVALUEFUNCTION];
-    if (decodeValueFunction === undefined) {
-      platformAccessory.platform.log.warn('No value decoding function for: ', propertyCodeString);
-    }
-    const parsedValue = decodeValueFunction(propertyValueField, platformAccessory, 'noop');
-    if (parsedValue === undefined) {
-      platformAccessory.platform.log.warn('Could not decode value for: ', propertyCodeString);
-      continue;
-    }
-
-    // some unknown codes might be under surveillance - check if this is one of them?
-    codeWatch(propertyCodeString, parsedValue, propertyValueField);
-
-    const propertyHandlerFunction = platformAccessory.propertiesTable[propertyCodeString][PROPERTYHANDLERFUNCTION];
-    if (propertyHandlerFunction === undefined) {
-      platformAccessory.platform.log.warn('undefined handler for:', propertyCodeString);
-      continue;
-    }
-
-    propertyHandlerFunction(parsedValue, platformAccessory, propertyCodeString);
   }
+
+
+  // const rawChunk = data;
+
+  // if (data[0] !== 0xc0) {
+  //   log.warn('expected start of message chunk (0x0c), got: ' + hexFormat(data[0]));
+  //   debugLog('network', 3, 'rawChunk: ' + hexFormat(rawChunk));
+  //   return;
+  // }
+  // data = data.subarray(1); // remove 0xc0
+
+  // if (data[0] !== 0x12) {
+  //   log.warn('expected start of message header (0x12), got: ' + hexFormat(data[0]));
+  //   debugLog('network', 3, 'rawChunk: ' + hexFormat(rawChunk));
+  //   return;
+  // }
+  // data = data.subarray(1); // remove 0x12
+
+  // // accumulate remaining size (bigAssNumber)
+  // let banArray:number[] = [];
+  // while (data.length > 0 && data[0] !== 0x22) { // field separator
+  //   banArray.push(data[0]);
+  //   data = data.subarray(1); // remove the byte we just consumed
+  // }
+  // const remainingChunkSize = bigAssNumber(Buffer.from(banArray));
+
+  // if (data.length !== (remainingChunkSize + 1)) { // add in the 0xc0
+  //   log.warn('this is not the chunk size we\'re looking for: ' + remainingChunkSize + ', actual: ' + data.length);
+  //   debugLog('network', 3, 'rawChunk: ' + hexFormat(rawChunk));
+  //   return;
+  // }
+  // if (data.length === 0 || data[0] !== 0x22) {
+  //   log.warn('not good.  apparently we ran off the end of the data buffer');
+  //   debugLog('network', 3, 'rawChunk: ' + hexFormat(rawChunk));
+  //   return;
+  // }
+  // data = data.subarray(1); // remove the field separator (0x22)
+
+  // // accumulate remaining size (bigAssNumber)
+  // banArray = [];
+  // while (data.length > 0 && (data[0] !== 0x12 && data[0] !== 0x1a)) {  // 0x12 or 0x1a, apparently neither can be part of a bigAssNumber?
+  //   banArray.push(data[0]);
+  //   data = data.subarray(1); // remove the byte we just consumed
+  // }
+  // const chunkSizeSansToken = bigAssNumber(Buffer.from(banArray));
+
+  // if (data.length !== (chunkSizeSansToken + 73)) { // 73 - token length + 1 (0xc0)
+  //   log.warn('chunkSizeSansToken: ' + chunkSizeSansToken + 73 + ', not what we expected with data length: ' + data.length);
+  //   debugLog('network', 3, 'rawChunk: ' + hexFormat(rawChunk));
+  //   return;
+  // }
+
+  // if (data[0] !== 0x12) { // then it must be 0x1a.
+  //   // let's see what happens if we just pass it on
+  // }
+
+  // /**
+  // * pick out the property code and send it to the decode function to get the value from its
+  // * coded field.  Then call the property's handler function to act on the message's contents (or not.)
+  // */
+  // while (data[0] !== 0xc0) {
+  //   if (data[0] === 0x28) { // 0x28 is the start of what looks like a token 72 bytes long followed by 0xc0 end of chunk.
+  //     if (data.length === 73) {
+  //       return;
+  //     } else {
+  //       debugLog('network', 2, 'surprise! token length was: ' + data.length);
+  //     }
+  //   }
+  //   if (data[0] !== 0x12 && data[0] !== 0x1a) {
+  //     platformAccessory.platform.log.warn('expected 0x12|0x1a, got: ', hexFormat(data.subarray(0, 1)));
+  //     debugLog('network', 2, 'unexpected byte in chunk:  ' + hexFormat(data) + ' from: ' + hexFormat(rawChunk));
+  //     return;
+  //   }
+  //   data = data.subarray(1);  // remove the 'start of header' (0x12|0x1a) from the remaining data
+
+  //   len = data[0];
+  //   data = data.subarray(1);  // remove the 'length' byte from the remaining data
+
+  //   propertyFields = data.subarray(0, len); // this is the message - property code and value
+  //   data = data.subarray(len);  // remove the message from the remaining data
+
+  //   let hdrsize = 2; // most property headers are two bytes
+  //   // // but there are a few single-byte headers
+  //   // if (propertyFields[0] === 0x0a ||
+  //   //     propertyFields[0] === 0x22 ||
+  //   //     propertyFields[0] === 0x2a ||
+  //   //     propertyFields[0] === 0x32 ||
+  //   //     propertyFields[0] === 0x3a ||
+  //   //     propertyFields[0] === 0x42 ||
+  //   //     propertyFields[0] === 0x70 ||
+  //   //     propertyFields[0] === 0x78) {
+  //   //   hdrsize = 1;
+  //   // }
+  //   if (platformAccessory.oneByteHeaders.includes(propertyFields[0])) {
+  //     hdrsize = 1;
+  //   }
+
+  //   const propertyCodeString = hexFormat(propertyFields.subarray(0, hdrsize));
+  //   const propertyValueField = propertyFields.subarray(hdrsize);
+
+  //   if (platformAccessory.propertiesTable[propertyCodeString] === undefined) {
+  //     platformAccessory.platform.log.warn('propertiesTable[' + propertyCodeString + '] === undefined');
+  //     continue;
+  //   }
+
+  //   const decodeValueFunction = platformAccessory.propertiesTable[propertyCodeString][DECODEVALUEFUNCTION];
+  //   if (decodeValueFunction === undefined) {
+  //     platformAccessory.platform.log.warn('No value decoding function for: ', propertyCodeString);
+  //   }
+  //   const parsedValue = decodeValueFunction(propertyValueField, platformAccessory, 'noop');
+  //   if (parsedValue === undefined) {
+  //     platformAccessory.platform.log.warn('Could not decode value for: ', propertyCodeString);
+  //     continue;
+  //   }
+
+  //   // some unknown codes might be under surveillance - check if this is one of them?
+  //   codeWatch(propertyCodeString, parsedValue, propertyValueField);
+
+  //   const propertyHandlerFunction = platformAccessory.propertiesTable[propertyCodeString][PROPERTYHANDLERFUNCTION];
+  //   if (propertyHandlerFunction === undefined) {
+  //     platformAccessory.platform.log.warn('undefined handler for:', propertyCodeString);
+  //     continue;
+  //   }
+
+  //   propertyHandlerFunction(parsedValue, platformAccessory, propertyCodeString);
+  // }
 }
 
 // Property Table
 function getPropertiesArray():typeof properties {
   // some gymnastics here to get past lint
-  const properties: (((v: number | string, p: BigAssFans_i6PlatformAccessory, s: string) => void) |
-  ((b: Buffer|string, p: BigAssFans_i6PlatformAccessory) => string))[][] = [];
+  const properties: (((v: number | string, p: BigAssFans_haikuPlatformAccessory, s: string) => void) |
+  ((b: Buffer|string, p: BigAssFans_haikuPlatformAccessory) => string))[][] = [];
   // many of the same codes occur in multiple chunks  (or in the same chunk?)
   properties['0x08, 0x03'] = [dataValue,      mysteryCode],             //  something to do with schedules
   properties['0x0a'] =       [text3Value,     noop];                    //  name
@@ -699,7 +765,7 @@ function getPropertiesArray():typeof properties {
   properties['0x90, 0x03'] = [intValue,       noop];                    //  comfort min speed
   properties['0x98, 0x03'] = [intValue,       noop];                    //  comfort max speed
   properties['0xa0, 0x03'] = [boolValue,      noop];                    //  fan motion sense
-  properties['0xa0, 0x04'] = [onOffAutoValue, lightOnState];            //  light
+  // properties['0xa0, 0x04'] = [onOffAutoValue, lightOnState];            //  light
   properties['0xa8, 0x03'] = [varIntValue,    noop];                    //  fan motion timeout
   properties['0xa8, 0x04'] = [intValue,       lightBrightness];         //  light brightness
   properties['0xa8, 0x08'] = [intValue,       mysteryCode];             //  mystery
@@ -731,7 +797,7 @@ function getPropertiesArray():typeof properties {
   properties['0xd0, 0x04'] = [boolValue,      noop];                    //  light return to auto on/off
   properties['0xd0, 0x08'] = [intValue,       mysteryCode];             //  mystery
   properties['0xd8, 0x01'] = [intValue,       mysteryCode];             //  mystery
-  properties['0xd8, 0x02'] = [onOffAutoValue, fanOnState];              //  fan on
+  // properties['0xd8, 0x02'] = [onOffAutoValue, fanOnState];              //  fan on
   properties['0xd8, 0x04'] = [varIntValue,    noop];                    //  light return to auto (time)
   properties['0xda, 0x03'] = [intValue,       mysteryCode];             //  mystery
   properties['0xda, 0x0a'] = [intValue,       mysteryCode];             //  mystery
@@ -783,14 +849,14 @@ function getPropertiesArray():typeof properties {
 /**
 * property handler functions
 */
-function lightColorTemperature(value: number|string, pA:BigAssFans_i6PlatformAccessory) {
+function lightColorTemperature(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
   const mireds = Math.round(1000000 / pA.lightStates.ColorTemperature);
   pA.lightStates.ColorTemperature = Number(value);
   debugLog('characteristics', 2, 'update ColorTemperature: ' + mireds);
   pA.lightBulbService.updateCharacteristic(pA.platform.Characteristic.ColorTemperature, mireds);
 }
 
-function lightBrightness(value: number|string, pA:BigAssFans_i6PlatformAccessory) {
+function lightBrightness(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
   if (value !== 0) { // don't tell homebridge brightness is zero, it only confuses it.  It'll find out it's off in soon enough.
     /* if (pA.lightStates.homeShieldUp && value != 1) {
       log.debug("uuunnnnnhhhh");
@@ -803,39 +869,39 @@ function lightBrightness(value: number|string, pA:BigAssFans_i6PlatformAccessory
   }
 }
 
-function lightOnState(value: number|string, pA:BigAssFans_i6PlatformAccessory) {
-  if (value === 2) {  // this means the light is in Auto mode -  we don't handle it yet
-    return;
-  }
+// function lightOnState(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
+//   if (value === 2) {  // this means the light is in Auto mode -  we don't handle it yet
+//     return;
+//   }
 
-  const onValue = (value === 0 ? false : true);
-  pA.lightStates.On = onValue;
-  debugLog('characteristics', 2, 'update Light On: ' + pA.lightStates.On);
-  pA.lightBulbService.updateCharacteristic(pA.platform.Characteristic.On, pA.lightStates.On);
-}
+//   const onValue = (value === 0 ? false : true);
+//   pA.lightStates.On = onValue;
+//   debugLog('characteristics', 2, 'update Light On: ' + pA.lightStates.On);
+//   pA.lightBulbService.updateCharacteristic(pA.platform.Characteristic.On, pA.lightStates.On);
+// }
 
-function fanOnState(value: number|string, pA:BigAssFans_i6PlatformAccessory) {
-  if (pA.showFanAutoSwitch) {
-    pA.fanAutoSwitchOn = (value === 2) ? true: false;
-    debugLog(['newcode', 'characteristics'], [1, 2], 'update fan auto: ' + pA.fanAutoSwitchOn);
-    pA.fanAutoSwitchService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanAutoSwitchOn);
-  }
+// function fanOnState(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
+//   if (pA.showFanAutoSwitch) {
+//     pA.fanAutoSwitchOn = (value === 2) ? true: false;
+//     debugLog(['newcode', 'characteristics'], [1, 2], 'update fan auto: ' + pA.fanAutoSwitchOn);
+//     pA.fanAutoSwitchService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanAutoSwitchOn);
+//   }
 
-  if (value === 2) {
-    // if (pA.fanStates.RotationSpeed > 0) {
-    //   pA.fanStates.On = true;
-    //   debugLog(['newcode', 'characteristics'], [1, 2], 'update FanOn:' + pA.fanStates.On + ' because (auto && speed > 0)');
-    //   pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
-    // }
-  } else {
-    const onValue = (value === 0 ? false : true);
-    pA.fanStates.On = onValue;
-    debugLog(['newcode', 'characteristics'], [1, 2], 'update FanOn: ' + pA.fanStates.On);
-    pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
-  }
-}
+//   if (value === 2) {
+//     // if (pA.fanStates.RotationSpeed > 0) {
+//     //   pA.fanStates.On = true;
+//     //   debugLog(['newcode', 'characteristics'], [1, 2], 'update FanOn:' + pA.fanStates.On + ' because (auto && speed > 0)');
+//     //   pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
+//     // }
+//   } else {
+//     const onValue = (value === 0 ? false : true);
+//     pA.fanStates.On = onValue;
+//     debugLog(['newcode', 'characteristics'], [1, 2], 'update FanOn: ' + pA.fanStates.On);
+//     pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
+//   }
+// }
 
-function fanRotationDirection(value: number|string, pA:BigAssFans_i6PlatformAccessory) {
+function fanRotationDirection(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
   //  fan reports if 'reverse rotation' is on or off, homebridge wants rotation direction
   //  reverse switch off (0) == rotation direction counterclockwise (1)
   const rotationDirection = value === 0 ? 1 : 0;
@@ -844,7 +910,7 @@ function fanRotationDirection(value: number|string, pA:BigAssFans_i6PlatformAcce
   pA.fanService.updateCharacteristic(pA.platform.Characteristic.RotationDirection, pA.fanStates.RotationDirection);
 }
 
-function fanRotationSpeed(value: number|string, pA:BigAssFans_i6PlatformAccessory) {
+function fanRotationSpeed(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
   if (value !== 0) { // don't tell homebridge speed is zero, it only confuses it.  It'll find out it's off in due course.
     pA.fanStates.homeShieldUp = false;
     pA.fanStates.RotationSpeed = (value as number);
@@ -864,7 +930,7 @@ function fanRotationSpeed(value: number|string, pA:BigAssFans_i6PlatformAccessor
   }
 }
 
-function currentTemperature(value: number|string, pA:BigAssFans_i6PlatformAccessory) {
+function currentTemperature(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
   if (value < -270 || value > 100) {
     pA.platform.log.info('current temperature out of range: ' + value + ', ignored');
     return;
@@ -875,7 +941,7 @@ function currentTemperature(value: number|string, pA:BigAssFans_i6PlatformAccess
   pA.temperatureSensorService.updateCharacteristic(pA.platform.Characteristic.CurrentTemperature, pA.CurrentTemperature);
 }
 
-function currentRelativeHumidity(value: number|string, pA:BigAssFans_i6PlatformAccessory) {
+function currentRelativeHumidity(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
   if (value < 0 || value > 100) {
     pA.platform.log.info('current relative humidity out of range: ' + value + ', ignored');
     return;
@@ -886,7 +952,7 @@ function currentRelativeHumidity(value: number|string, pA:BigAssFans_i6PlatformA
   pA.humiditySensorService.updateCharacteristic(pA.platform.Characteristic.CurrentRelativeHumidity, pA.CurrentRelativeHumidity);
 }
 
-function whooshOnState(value: number|string, pA:BigAssFans_i6PlatformAccessory) {
+function whooshOnState(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
   if (pA.showWhooshSwitch) {
     const onValue = (value === 0 ? false : true);
     pA.whooshSwitchOn = onValue;
@@ -895,7 +961,7 @@ function whooshOnState(value: number|string, pA:BigAssFans_i6PlatformAccessory) 
   }
 }
 
-function dimToWarmOnState(value: number|string, pA:BigAssFans_i6PlatformAccessory) {
+function dimToWarmOnState(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
   if (pA.showDimToWarmSwitch) {
     const onValue = (value === 0 ? false : true);
     pA.dimToWarmSwitchOn = onValue;
@@ -909,7 +975,7 @@ function noop() {
 }
 
 // keeping track to gather clues in unending effort to ID unknown codes
-function mysteryCode(value: string, pA:BigAssFans_i6PlatformAccessory, code: string) {
+function mysteryCode(value: string, pA:BigAssFans_haikuPlatformAccessory, code: string) {
   const v = value;
   const p = pA.mysteryProperties[code];
 
@@ -928,7 +994,7 @@ function mysteryCode(value: string, pA:BigAssFans_i6PlatformAccessory, code: str
 * value decoding functions
 */
 
-function onOffAutoValue(bytes:Buffer, pA:BigAssFans_i6PlatformAccessory): number|string|undefined {
+function onOffAutoValue(bytes:Buffer, pA:BigAssFans_haikuPlatformAccessory): number|string|undefined {
   switch (bytes[0]) {
     case 0x00: // thing is off, auto is off
     case 0x01: // thing is on, may or may not be due to auto being on
@@ -940,7 +1006,7 @@ function onOffAutoValue(bytes:Buffer, pA:BigAssFans_i6PlatformAccessory): number
   }
 }
 
-function boolValue(bytes:Buffer, pA:BigAssFans_i6PlatformAccessory): number|string|undefined {
+function boolValue(bytes:Buffer, pA:BigAssFans_haikuPlatformAccessory): number|string|undefined {
   switch (bytes[0]) {
     case 0x00:
     case 0x01:

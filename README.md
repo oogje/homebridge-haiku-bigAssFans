@@ -45,7 +45,7 @@ sudo npm install -g homebridge-haiku-bigassfans@beta
 
 #### Configuration
 
-Add the `BigAssFans-haiku` platform in `config.json` in your home directory inside `.homebridge`.
+Add the `BigAssFans-Haiku` platform in `config.json` in your home directory inside `.homebridge`.
 
 Add your fan(s) in the `fans` array.
 
@@ -55,7 +55,7 @@ Example configuration:
 {
   "platforms": [
     {
-      "platform": "BigAssFans-haiku",
+      "platform": "BigAssFans-Haiku",
             "fans": [
                 {
                     "name": "Big Fan",
@@ -72,7 +72,7 @@ Example configuration:
 #### Platform configuration fields
 
 * `platform` [required]
-Should always be **"BigAssFans-haiku"**.
+Should always be **"BigAssFans-Haiku"**.
 * `fans` [required]
 A list of your fans.
 
