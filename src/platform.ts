@@ -153,11 +153,11 @@ export class BigAssFans_haikuPlatform implements DynamicPlatformPlugin {
 import net = require('net');
 let timeoutID: NodeJS.Timeout;
 function checkDevice(platform: BigAssFans_haikuPlatform, ip: string, cb) {
-  platform.log.debug("attempt to connect to: ", ip);
+  platform.log.debug('attempt to connect to: ', ip);
   const client = net.connect(31415, ip, () => {
     // const b = Buffer.from([0xc0, 0x12, 0x02, 0x1a, 0x00, 0xc0]);
     // client.write(b);
-    platform.log.debug("connected");
+    platform.log.debug('connected');
     client.destroy();
 
     // timeoutID = setTimeout((log: Logger, ip: string, client) => {
@@ -165,7 +165,7 @@ function checkDevice(platform: BigAssFans_haikuPlatform, ip: string, cb) {
     //   log.error('Fan configured with ip: ' + ip +
     //       ' is not responding to our probe.  This could happen if the fan model is not i6, but for instance Haiku.');
     // }, 30000, platform.log, ip, client);
-    cb(client, "(");
+    cb(client, '(');
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -196,5 +196,5 @@ function checkDevice(platform: BigAssFans_haikuPlatform, ip: string, cb) {
   //     cb(client, Buffer.from([0x00]));
   //   }
   // });
-  platform.log.debug("just hangin'");
+  platform.log.debug('just hangin\'');
 }

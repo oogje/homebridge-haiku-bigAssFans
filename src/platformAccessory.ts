@@ -19,8 +19,8 @@ const MAXFANSPEED = 7;
 const MAXEBUGLEVEL = 99;
 
 // property table columns
-const DECODEVALUEFUNCTION = 0;
-const PROPERTYHANDLERFUNCTION = 1;
+// const DECODEVALUEFUNCTION = 0;
+// const PROPERTYHANDLERFUNCTION = 1;
 
 const ONEBYTEHEADER = [0xc0, 0x12, 0x07, 0x12, 0x05, 0x1a, 0x03];
 
@@ -132,7 +132,7 @@ export class BigAssFans_haikuPlatformAccessory {
     */
 
     const capitalizeName = accessory.context.device.name[0] === accessory.context.device.name[0].toUpperCase();
-    let accessoryName:string;
+    // let accessoryName:string;
 
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'Big Ass Fans')
@@ -159,8 +159,9 @@ export class BigAssFans_haikuPlatformAccessory {
     // Light Bulb
     this.lightBulbService = this.accessory.getService(this.platform.Service.Lightbulb) ||
       this.accessory.addService(this.platform.Service.Lightbulb);
-    accessoryName = capitalizeName ? ' Light' : ' light';
-    this.lightBulbService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.name + accessoryName);
+    // accessoryName = capitalizeName ? ' Light' : ' light';
+    this.lightBulbService.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.name +
+      capitalizeName ? ' Light' : ' light');
 
     this.lightBulbService.getCharacteristic(this.platform.Characteristic.On)
       .onSet(this.setLightOnState.bind(this))                // SET - bind to the `setLightOnState` method below
@@ -256,7 +257,7 @@ export class BigAssFans_haikuPlatformAccessory {
     this.lightStates.On = value as boolean;
     clientWrite(this.client,
       // Buffer.from(ONEBYTEHEADER.concat([0xa0, 0x04, (this.lightStates.On ? 0x01 : 0x00), 0xc0])));
-      Buffer.from("<Haiku;LIGHT;PWR;".concat((this.lightStates.On ? "ON" : "OFF"), ">")));
+      Buffer.from('<Haiku;LIGHT;PWR;'.concat((this.lightStates.On ? 'ON' : 'OFF'), '>')));
   }
 
   async getLightOnState(): Promise<CharacteristicValue> {
@@ -327,7 +328,7 @@ export class BigAssFans_haikuPlatformAccessory {
     // clientWrite(this.client, Buffer.from(ONEBYTEHEADER.concat([0xd8, 0x02, (this.fanStates.On ? 0x01 : 0x00), 0xc0])));
     clientWrite(this.client,
       // Buffer.from(ONEBYTEHEADER.concat([0xa0, 0x04, (this.lightStates.On ? 0x01 : 0x00), 0xc0])));
-      Buffer.from("<Haiku;FAN;PWR;".concat((this.lightStates.On ? "ON" : "OFF"), ">")));
+      Buffer.from('<Haiku;FAN;PWR;'.concat((this.lightStates.On ? 'ON' : 'OFF'), '>')));
 
   }
 
@@ -447,8 +448,8 @@ export class BigAssFans_haikuPlatformAccessory {
 }
 
 import net = require('net');
-import { privateEncrypt } from 'crypto';
-import { debug } from 'console';
+// import { privateEncrypt } from 'crypto';
+// import { debug } from 'console';
 /**
 * connect to the fan, send an initialization message, establish the error and data callbacks and start a keep-alive interval timer.
 */
@@ -458,7 +459,7 @@ function networkSetup(platformAccessory: BigAssFans_haikuPlatformAccessory) {
     platformAccessory.client.setKeepAlive(true);
 
     // clientWrite(platformAccessory.client, Buffer.from([0xc0, 0x12, 0x02, 0x1a, 0x00, 0xc0]));
-    // clientWrite(platformAccessory.client, Buffer.from("hello haiku fan"));
+    // clientWrite(platformAccessory.client, Buffer.from('hello haiku fan'));
   });
 
   let errHandler;
@@ -548,51 +549,51 @@ function onData(platformAccessory: BigAssFans_haikuPlatformAccessory, data: Buff
 }
 
 function processFanMessage(platformAccessory: BigAssFans_haikuPlatformAccessory, data: typeof Buffer) {
-  const log = platformAccessory.platform.log;
-  let len = 0;
-  let propertyFields: typeof Buffer;
+  // const log = platformAccessory.platform.log;
+  // let len = 0;
+  // let propertyFields: typeof Buffer;
 
-// (Haiku;LIGHT;PWR;OFF)
-// (Haiku;LIGHT;LEVEL;ACTUAL;0)
+  // (Haiku;LIGHT;PWR;OFF)
+  // (Haiku;LIGHT;LEVEL;ACTUAL;0)
 
-// keep an eye on removing the newline - need it for simulation testing but could guess trouble with real fan - time will tell
-  let messageArray = ("" + data).replace(/<|>|\(|\)|\n/g, "").split(";")
+  // keep an eye on removing the newline - need it for simulation testing but could guess trouble with real fan - time will tell
+  const messageArray = ('' + data).replace(/<|>|\(|\)|\n/g, '').split(';');
 
-  let fanName = messageArray[0];
-  let component = messageArray[1];
-  let componentProperty = messageArray[2];
+  // let fanName = messageArray[0];
+  const component = messageArray[1];
+  const componentProperty = messageArray[2];
 
   debugLog('newcode', 1, 'component: ' + component);
   debugLog('newcode', 1, 'componentProperty: ' + component);
 
-  if (component == "LIGHT") {
-    if (componentProperty === "PWR") {
-      let propertyValue = messageArray[3];
+  if (component === 'LIGHT') {
+    if (componentProperty === 'PWR') {
+      const propertyValue = messageArray[3];
 
       debugLog('newcode', 1, 'propertyValue: ' + propertyValue);
 
       // function lightOnState(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
-        // if (value === 2) {  // this means the light is in Auto mode -  we don't handle it yet
-        //   return;
-        // }
-      let pA = platformAccessory;
-      const onValue = (propertyValue === "ON" ? true : false);
+      // if (value === 2) {  // this means the light is in Auto mode -  we don't handle it yet
+      //   return;
+      // }
+      const pA = platformAccessory;
+      const onValue = (propertyValue === 'ON' ? true : false);
       pA.lightStates.On = onValue;
       debugLog('characteristics', 2, 'update Light On: ' + pA.lightStates.On);
       pA.lightBulbService.updateCharacteristic(pA.platform.Characteristic.On, pA.lightStates.On);
       // }
     }
-  } else if (component == "FAN") {
-    if (componentProperty === "PWR") {
-      let propertyValue = messageArray[3];
+  } else if (component === 'FAN') {
+    if (componentProperty === 'PWR') {
+      const propertyValue = messageArray[3];
 
-      let pA = platformAccessory;
+      const pA = platformAccessory;
       // if (pA.showFanAutoSwitch) {
       //   pA.fanAutoSwitchOn = (value === 2) ? true: false;
       //   debugLog(['newcode', 'characteristics'], [1, 2], 'update fan auto: ' + pA.fanAutoSwitchOn);
       //   pA.fanAutoSwitchService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanAutoSwitchOn);
       // }
-    
+
       // if (value === 2) {
       //   // if (pA.fanStates.RotationSpeed > 0) {
       //   //   pA.fanStates.On = true;
@@ -600,11 +601,11 @@ function processFanMessage(platformAccessory: BigAssFans_haikuPlatformAccessory,
       //   //   pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
       //   // }
       // } else {
-        const onValue = (propertyValue === "ON" ? true : false);
-        pA.fanStates.On = onValue;
-        debugLog(['newcode', 'characteristics'], [1, 2], 'update FanOn: ' + pA.fanStates.On);
-        pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
-      }
+      const onValue = (propertyValue === 'ON' ? true : false);
+      pA.fanStates.On = onValue;
+      debugLog(['newcode', 'characteristics'], [1, 2], 'update FanOn: ' + pA.fanStates.On);
+      pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
+    }
     // }
   }
 
@@ -859,7 +860,7 @@ function lightColorTemperature(value: number|string, pA:BigAssFans_haikuPlatform
 function lightBrightness(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
   if (value !== 0) { // don't tell homebridge brightness is zero, it only confuses it.  It'll find out it's off in soon enough.
     /* if (pA.lightStates.homeShieldUp && value != 1) {
-      log.debug("uuunnnnnhhhh");
+      log.debug('uuunnnnnhhhh');
     } else */{
       pA.lightStates.homeShieldUp = false;
       pA.lightStates.Brightness = (value as number);
@@ -994,17 +995,17 @@ function mysteryCode(value: string, pA:BigAssFans_haikuPlatformAccessory, code: 
 * value decoding functions
 */
 
-function onOffAutoValue(bytes:Buffer, pA:BigAssFans_haikuPlatformAccessory): number|string|undefined {
-  switch (bytes[0]) {
-    case 0x00: // thing is off, auto is off
-    case 0x01: // thing is on, may or may not be due to auto being on
-    case 0x02: // auto is on fan may or may not be spinning
-      return (bytes[0]);
-    default:
-      pA.platform.log.warn('unknown value for \'on|off|auto\': ', hexFormat(bytes));
-      return undefined;
-  }
-}
+// function onOffAutoValue(bytes:Buffer, pA:BigAssFans_haikuPlatformAccessory): number|string|undefined {
+//   switch (bytes[0]) {
+//     case 0x00: // thing is off, auto is off
+//     case 0x01: // thing is on, may or may not be due to auto being on
+//     case 0x02: // auto is on fan may or may not be spinning
+//       return (bytes[0]);
+//     default:
+//       pA.platform.log.warn('unknown value for \'on|off|auto\': ', hexFormat(bytes));
+//       return undefined;
+//   }
+// }
 
 function boolValue(bytes:Buffer, pA:BigAssFans_haikuPlatformAccessory): number|string|undefined {
   switch (bytes[0]) {
@@ -1093,46 +1094,46 @@ function dataValue(bytes:Buffer): number|string {
 }
 
 // a little hack for codes under investigation
-function codeWatch(s: string, v: string|number|Buffer, m: Buffer) {
-  if (s === '0xe8, 0x01') {
-    debugLog('cluing', 4, 'code watch - s: ' + s + ', m: ' + hexFormat(m));
-  } if (s === '0xd8, 0x01') {
-    debugLog('cluing', 4, 'code watch - s: ' + s + ', m: ' + hexFormat(m));
-  } else if (s === '0x18, 0xc0') {
-    debugLog('cluing', 4, 'code watch - s: ' + s + ', m: ' + hexFormat(m));
-  } else if (s === '0xda, 0x0a') {
-    debugLog('cluing', 4, 'code watch - s: ' + s + ', v: ' + hexFormat(v));
-  }
-}
+// function codeWatch(s: string, v: string|number|Buffer, m: Buffer) {
+//   if (s === '0xe8, 0x01') {
+//     debugLog('cluing', 4, 'code watch - s: ' + s + ', m: ' + hexFormat(m));
+//   } if (s === '0xd8, 0x01') {
+//     debugLog('cluing', 4, 'code watch - s: ' + s + ', m: ' + hexFormat(m));
+//   } else if (s === '0x18, 0xc0') {
+//     debugLog('cluing', 4, 'code watch - s: ' + s + ', m: ' + hexFormat(m));
+//   } else if (s === '0xda, 0x0a') {
+//     debugLog('cluing', 4, 'code watch - s: ' + s + ', v: ' + hexFormat(v));
+//   }
+// }
 
 const ESC = 0xDB;
-const START = 0xc0;
+// const START = 0xc0;
 const ESC_STUFF = 0xDD;
 const START_STUFF = 0xDC;
 
-function unstuff(data:typeof Buffer):typeof Buffer {
-  const unstuffedData: number[] = [];
-  if (data[0] !== START) {
-    debugLog('network', 1, 'data doesn\'t begin with START byte - all bets are off');
-  } else {
-    let dataIndex = 0;
-    let unstuffedDataIndex = 0;
-    unstuffedData[unstuffedDataIndex++] = data[dataIndex++];
-    while (dataIndex < (data.length - 1)) {
-      if (data[dataIndex] === ESC && data[dataIndex+1] === START_STUFF) {
-        unstuffedData[unstuffedDataIndex++] = 0xc0;
-        dataIndex += 2; // skip over the ESC and the START_STUFF
-      } else if (data[dataIndex] === ESC && data[dataIndex+1] === ESC_STUFF) {
-        unstuffedData[unstuffedDataIndex++] = 0xDB;
-        dataIndex += 2; // skip over the ESC and the ESC_STUFF
-      } else {
-        unstuffedData[unstuffedDataIndex++] = data[dataIndex++];
-      }
-    }
-    unstuffedData[unstuffedDataIndex] = data[dataIndex];  // better be c0! should check it?
-  }
-  return Buffer.from(unstuffedData);
-}
+// function unstuff(data:typeof Buffer):typeof Buffer {
+//   const unstuffedData: number[] = [];
+//   if (data[0] !== START) {
+//     debugLog('network', 1, 'data doesn\'t begin with START byte - all bets are off');
+//   } else {
+//     let dataIndex = 0;
+//     let unstuffedDataIndex = 0;
+//     unstuffedData[unstuffedDataIndex++] = data[dataIndex++];
+//     while (dataIndex < (data.length - 1)) {
+//       if (data[dataIndex] === ESC && data[dataIndex+1] === START_STUFF) {
+//         unstuffedData[unstuffedDataIndex++] = 0xc0;
+//         dataIndex += 2; // skip over the ESC and the START_STUFF
+//       } else if (data[dataIndex] === ESC && data[dataIndex+1] === ESC_STUFF) {
+//         unstuffedData[unstuffedDataIndex++] = 0xDB;
+//         dataIndex += 2; // skip over the ESC and the ESC_STUFF
+//       } else {
+//         unstuffedData[unstuffedDataIndex++] = data[dataIndex++];
+//       }
+//     }
+//     unstuffedData[unstuffedDataIndex] = data[dataIndex];  // better be c0! should check it?
+//   }
+//   return Buffer.from(unstuffedData);
+// }
 
 function bigAssNumber(value: typeof Buffer) {
   let n = value[0];
