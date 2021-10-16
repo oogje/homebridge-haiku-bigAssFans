@@ -48,7 +48,7 @@
             },
             "fanAuto": {
               "title": "Fan Auto Switch",
-              "description": "Add switch for 'Fan Auto'",
+              "description": "Add a switch for 'Fan Auto'",
               "type": "boolean",
               "default": false
             }
@@ -57,4 +57,4 @@
       }
     }
   }
-} 
+}

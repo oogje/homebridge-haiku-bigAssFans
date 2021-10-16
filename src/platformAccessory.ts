@@ -259,7 +259,7 @@ export class BigAssFans_haikuPlatformAccessory {
     this.lightStates.On = value as boolean;
     clientWrite(this.client,
       // Buffer.from(ONEBYTEHEADER.concat([0xa0, 0x04, (this.lightStates.On ? 0x01 : 0x00), 0xc0])));
-      Buffer.from('<' + this.Name + ';LIGHT;PWR;' + (this.lightStates.On ? 'ON' : 'OFF') + '>'));
+      Buffer.from('<' + this.MAC + ';LIGHT;PWR;' + (this.lightStates.On ? 'ON' : 'OFF') + '>'));
   }
 
   async getLightOnState(): Promise<CharacteristicValue> {
@@ -279,14 +279,14 @@ export class BigAssFans_haikuPlatformAccessory {
       this.lightStates.Brightness = 0;
       // const b1 = ONEBYTEHEADER.concat([0xa8, 0x04, 1, 0xc0]); // this one is for the device's memory
       // const b2 = ONEBYTEHEADER.concat([0xa8, 0x04, 0, 0xc0]); // this one is actually turn off light
-      const b1 = '<' + this.Name + ';LIGHT;LEVEL;SET;1' + '>';
-      const b2 = '<' + this.Name + ';LIGHT;LEVEL;SET;0' + '>';
+      const b1 = '<' + this.MAC + ';LIGHT;LEVEL;SET;1' + '>';
+      const b2 = '<' + this.MAC + ';LIGHT;LEVEL;SET;0' + '>';
       b = Buffer.from(b1 + b2);
     } else if (value === 100 && this.lightStates.homeShieldUp) {
       this.lightStates.homeShieldUp = false;
       this.lightStates.Brightness = 1;
       // b = Buffer.from(ONEBYTEHEADER.concat([0xa8, 0x04, 1, 0xc0]));
-      b = Buffer.from('<' + this.Name + ';LIGHT;LEVEL;SET;1' + '>');
+      b = Buffer.from('<' + this.MAC + ';LIGHT;LEVEL;SET;1' + '>');
     } else {
       this.lightStates.homeShieldUp = false;
       debugLog('characteristics', 2, 'Set Characteristic Brightness -> ' + (value as number) + '%');
@@ -296,7 +296,7 @@ export class BigAssFans_haikuPlatformAccessory {
         this.platform.log.warn('ignoring light level > ' + MAXHAIKULIGHTLEVEL + ': ' + haikuUnits);
       }
       // b = Buffer.from(ONEBYTEHEADER.concat([0xa8, 0x04, this.lightStates.Brightness, 0xc0]));
-      b = Buffer.from('<' + this.Name + ';LIGHT;LEVEL;SET;' + haikuUnits + '>');
+      b = Buffer.from('<' + this.MAC + ';LIGHT;LEVEL;SET;' + haikuUnits + '>');
     }
     clientWrite(this.client, b);
   }
@@ -337,7 +337,7 @@ export class BigAssFans_haikuPlatformAccessory {
 
     // clientWrite(this.client, Buffer.from(ONEBYTEHEADER.concat([0xd8, 0x02, (this.fanStates.On ? 0x01 : 0x00), 0xc0])));
     clientWrite(this.client,
-      Buffer.from('<' + this.Name + ';FAN;PWR;' + (this.fanStates.On ? 'ON' : 'OFF') + '>'));
+      Buffer.from('<' + this.MAC + ';FAN;PWR;' + (this.fanStates.On ? 'ON' : 'OFF') + '>'));
 
   }
 
@@ -356,14 +356,14 @@ export class BigAssFans_haikuPlatformAccessory {
       this.fanStates.RotationSpeed = 0;
       // const b1 = ONEBYTEHEADER.concat([0xf0, 0x02, 1, 0xc0]); // this one is for the device's memory
       // const b2 = ONEBYTEHEADER.concat([0xf0, 0x02, 0, 0xc0]); // this one will actually stop rotation
-      const b1 = '<' + this.Name + ';FAN;SPD;SET;1' + '>';
-      const b2 = '<' + this.Name + ';FAN;SPD;SET;0' + '>';
+      const b1 = '<' + this.MAC + ';FAN;SPD;SET;1' + '>';
+      const b2 = '<' + this.MAC + ';FAN;SPD;SET;0' + '>';
       b = Buffer.from(b1.concat(b2));
     } else if (value === 100 && this.fanStates.homeShieldUp) {
       this.fanStates.homeShieldUp = false;
       this.fanStates.RotationSpeed = 1;
       // b = Buffer.from(ONEBYTEHEADER.concat([0xf0, 0x02, 1, 0xc0]));
-      b = Buffer.from('<' + this.Name + ';FAN;SPD;SET;1' + '>');
+      b = Buffer.from('<' + this.MAC + ';FAN;SPD;SET;1' + '>');
     } else {
       this.fanStates.homeShieldUp = false;
       debugLog('characteristics', 2, 'Set Characteristic RotationSpeed -> ' + value + '%');
@@ -374,7 +374,7 @@ export class BigAssFans_haikuPlatformAccessory {
         haikuUnits = MAXFANSPEED;
       }
       // b = Buffer.from(ONEBYTEHEADER.concat([0xf0, 0x02, this.fanStates.RotationSpeed, 0xc0]));
-      b = Buffer.from('<' + this.Name + ';FAN;SPD;SET;' + haikuUnits + '>');
+      b = Buffer.from('<' + this.MAC + ';FAN;SPD;SET;' + haikuUnits + '>');
     }
     clientWrite(this.client, b);
   }
@@ -472,10 +472,10 @@ function networkSetup(platformAccessory: BigAssFans_haikuPlatformAccessory) {
     platformAccessory.client.setKeepAlive(true);
 
     // clientWrite(platformAccessory.client, Buffer.from([0xc0, 0x12, 0x02, 0x1a, 0x00, 0xc0]));
-    clientWrite(platformAccessory.client, Buffer.from('<' + platformAccessory.Name + ';FAN;PWR;GET>'));
-    clientWrite(platformAccessory.client, Buffer.from('<' + platformAccessory.Name + ';LIGHT;PWR;GET>'));
-    clientWrite(platformAccessory.client, Buffer.from('<' + platformAccessory.Name + ';LIGHT;LEVEL;ACTUAL;GET>'));
-    clientWrite(platformAccessory.client, Buffer.from('<' + platformAccessory.Name + ';FAN;SPD;ACTUAL;GET>'));
+    clientWrite(platformAccessory.client, Buffer.from('<' + platformAccessory.MAC + ';FAN;PWR;GET>'));
+    clientWrite(platformAccessory.client, Buffer.from('<' + platformAccessory.MAC + ';LIGHT;PWR;GET>'));
+    clientWrite(platformAccessory.client, Buffer.from('<' + platformAccessory.MAC + ';LIGHT;LEVEL;GET;ACTUAL>'));
+    clientWrite(platformAccessory.client, Buffer.from('<' + platformAccessory.MAC + ';FAN;SPD;GET;ACTUAL>'));
   });
 
   let errHandler;
@@ -570,6 +570,7 @@ function processFanMessage(platformAccessory: BigAssFans_haikuPlatformAccessory,
   // let propertyFields: typeof Buffer;
 
   // (Haiku;LIGHT;PWR;OFF)
+  // (Haiku;FAN;PWR;ON)
   // (Haiku;LIGHT;LEVEL;ACTUAL;0)
 
   // keep an eye on removing the newline - need it for simulation testing but could guess trouble with real fan - time will tell
