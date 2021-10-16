@@ -15,6 +15,7 @@ debugLevels['characteristics'] = 0;
 debugLevels['newcode'] = 0;
 
 const MAXFANSPEED = 7;
+const MAXHAIKULIGHTLEVEL = 16
 
 const MAXEBUGLEVEL = 99;
 
@@ -35,7 +36,7 @@ export class BigAssFans_haikuPlatformAccessory {
 
   public lightStates = {
     On: true,
-    Brightness: 1,  // percent
+    Brightness: 1,  // percent (homekit units)
     ColorTemperature: 2200,
     homeShieldUp: false,  // used to prevent Home.app from turning light on at 100% when it's at zero percent.
   };
@@ -43,7 +44,7 @@ export class BigAssFans_haikuPlatformAccessory {
   public fanStates = {
     On: false,
     RotationDirection: 1,
-    RotationSpeed: 1,   // on scale from 1 to 7
+    RotationSpeed: 14,   // percent (homekit units)
     homeShieldUp: false,  // used to prevent Home.app from turning fan on at 100% when it's at zero percent.
     // fanAutoHackInProgress: false,
   };
@@ -57,7 +58,7 @@ export class BigAssFans_haikuPlatformAccessory {
 
   public IP: string;
   public MAC: string;
-  public Name = 'naamloos';
+  public Name: string;
   public SSID = 'apname';
   public Model = 'haiku';
 
@@ -84,6 +85,7 @@ export class BigAssFans_haikuPlatformAccessory {
     hbLog = platform.log;
     this.IP = accessory.context.device.ip;
     this.MAC = accessory.context.device.mac;
+    this.Name = accessory.context.device.name;
 
     for (const hdr in this.propertiesTable) {
       const a = hdr.split(',');
@@ -148,9 +150,9 @@ export class BigAssFans_haikuPlatformAccessory {
       .onSet(this.setFanOnState.bind(this))
       .onGet(this.getFanOnState.bind(this));
 
-    // this.fanService.getCharacteristic(this.platform.Characteristic.RotationSpeed)
-    //   .onSet(this.setRotationSpeed.bind(this))
-    //   .onGet(this.getRotationSpeed.bind(this));
+    this.fanService.getCharacteristic(this.platform.Characteristic.RotationSpeed)
+      .onSet(this.setRotationSpeed.bind(this))
+      .onGet(this.getRotationSpeed.bind(this));
 
     // this.fanService.getCharacteristic(this.platform.Characteristic.RotationDirection)
     //   .onSet(this.setRotationDirection.bind(this))
@@ -167,9 +169,9 @@ export class BigAssFans_haikuPlatformAccessory {
       .onSet(this.setLightOnState.bind(this))                // SET - bind to the `setLightOnState` method below
       .onGet(this.getLightOnState.bind(this));               // GET - bind to the `getOn` method below
 
-    // this.lightBulbService.getCharacteristic(this.platform.Characteristic.Brightness)
-    //   .onSet(this.setBrightness.bind(this))
-    //   .onGet(this.getBrightness.bind(this));
+    this.lightBulbService.getCharacteristic(this.platform.Characteristic.Brightness)
+      .onSet(this.setBrightness.bind(this))
+      .onGet(this.getBrightness.bind(this));
 
     // this.lightBulbService.getCharacteristic(this.platform.Characteristic.ColorTemperature)
     //   .onSet(this.setColorTemperature.bind(this))
@@ -257,7 +259,7 @@ export class BigAssFans_haikuPlatformAccessory {
     this.lightStates.On = value as boolean;
     clientWrite(this.client,
       // Buffer.from(ONEBYTEHEADER.concat([0xa0, 0x04, (this.lightStates.On ? 0x01 : 0x00), 0xc0])));
-      Buffer.from('<Haiku;LIGHT;PWR;'.concat((this.lightStates.On ? 'ON' : 'OFF'), '>')));
+      Buffer.from('<' + this.Name + ';LIGHT;PWR;' + (this.lightStates.On ? 'ON' : 'OFF') + '>'));
   }
 
   async getLightOnState(): Promise<CharacteristicValue> {
@@ -268,50 +270,58 @@ export class BigAssFans_haikuPlatformAccessory {
     return isOn;
   }
 
+  // value is percentage(homekit units).  Will convert to haiku units (0-16) for light, but store (lightStates.Brightness) in homekit units.
   async setBrightness(value: CharacteristicValue) {
     let b: Buffer;
     if (value === 0) {
-      debugLog('characteristics', 2, 'Set Characteristic Brightness -> ' + value);
+      debugLog('characteristics', 2, 'Set Characteristic Brightness -> ' + (value as number) + '%');
       this.lightStates.homeShieldUp = true;
       this.lightStates.Brightness = 0;
-      const b1 = ONEBYTEHEADER.concat([0xa8, 0x04, 1, 0xc0]); // this one is for the device's memory
-      const b2 = ONEBYTEHEADER.concat([0xa8, 0x04, 0, 0xc0]); // this one is actually turn off light
-      b = Buffer.from(b1.concat(b2));
+      // const b1 = ONEBYTEHEADER.concat([0xa8, 0x04, 1, 0xc0]); // this one is for the device's memory
+      // const b2 = ONEBYTEHEADER.concat([0xa8, 0x04, 0, 0xc0]); // this one is actually turn off light
+      const b1 = '<' + this.Name + ';LIGHT;LEVEL;SET;1' + '>';
+      const b2 = '<' + this.Name + ';LIGHT;LEVEL;SET;0' + '>';
+      b = Buffer.from(b1 + b2);
     } else if (value === 100 && this.lightStates.homeShieldUp) {
       this.lightStates.homeShieldUp = false;
       this.lightStates.Brightness = 1;
-      b = Buffer.from(ONEBYTEHEADER.concat([0xa8, 0x04, 1, 0xc0]));
+      // b = Buffer.from(ONEBYTEHEADER.concat([0xa8, 0x04, 1, 0xc0]));
+      b = Buffer.from('<' + this.Name + ';LIGHT;LEVEL;SET;1' + '>');
     } else {
       this.lightStates.homeShieldUp = false;
-      debugLog('characteristics', 2, 'Set Characteristic Brightness -> ' + value);
+      debugLog('characteristics', 2, 'Set Characteristic Brightness -> ' + (value as number) + '%');
       this.lightStates.Brightness = value as number;
-      b = Buffer.from(ONEBYTEHEADER.concat([0xa8, 0x04, this.lightStates.Brightness, 0xc0]));
+      const haikuUnits = Math.round((this.lightStates.Brightness / 100.0) * MAXHAIKULIGHTLEVEL);
+      if (haikuUnits > MAXHAIKULIGHTLEVEL) {
+        this.platform.log.warn('ignoring light level > ' + MAXHAIKULIGHTLEVEL + ': ' + haikuUnits);
+      }
+      // b = Buffer.from(ONEBYTEHEADER.concat([0xa8, 0x04, this.lightStates.Brightness, 0xc0]));
+      b = Buffer.from('<' + this.Name + ';LIGHT;LEVEL;SET;' + haikuUnits + '>');
     }
     clientWrite(this.client, b);
   }
 
   async getBrightness(): Promise<CharacteristicValue> {
-    const brightness = (this.lightStates.Brightness === 0 ? 1 : this.lightStates.Brightness);
-    debugLog('characteristics', 4, 'Get Characteristic Brightness -> ' + brightness);
-    return brightness;
+    debugLog('characteristics', 4, 'Get Characteristic Brightness -> ' + this.lightStates.Brightness + '%');
+    return this.lightStates.Brightness;
   }
 
-  async getCurrentTemperature(): Promise<CharacteristicValue> {
-    // const temperature = (this.CurrentTemperature - 32) / 1.8; // convert to celsius
-    const temperature = this.CurrentTemperature;
-    if (temperature < -270 || temperature > 100) {
-      this.platform.log.warn('temperature out of bounds: ', temperature);
-      return 0;
-    }
-    debugLog('characteristics', 4, 'Get Characteristic CurrentTemperature -> ' + temperature);
-    return temperature;
-  }
+  // async getCurrentTemperature(): Promise<CharacteristicValue> {
+  //   // const temperature = (this.CurrentTemperature - 32) / 1.8; // convert to celsius
+  //   const temperature = this.CurrentTemperature;
+  //   if (temperature < -270 || temperature > 100) {
+  //     this.platform.log.warn('temperature out of bounds: ', temperature);
+  //     return 0;
+  //   }
+  //   debugLog('characteristics', 4, 'Get Characteristic CurrentTemperature -> ' + temperature);
+  //   return temperature;
+  // }
 
-  async getCurrentRelativeHumidity(): Promise<CharacteristicValue> {
-    const humidity = this.CurrentRelativeHumidity;
-    debugLog('characteristics', 4, 'Get Characteristic CurrentRelativeHumidity -> ' + humidity);
-    return humidity;
-  }
+  // async getCurrentRelativeHumidity(): Promise<CharacteristicValue> {
+  //   const humidity = this.CurrentRelativeHumidity;
+  //   debugLog('characteristics', 4, 'Get Characteristic CurrentRelativeHumidity -> ' + humidity);
+  //   return humidity;
+  // }
 
   async setFanOnState(value: CharacteristicValue) {
     debugLog(['newcode', 'characteristics'], [1, 2], 'Set Characteristic Fan On -> ' + value);
@@ -327,8 +337,7 @@ export class BigAssFans_haikuPlatformAccessory {
 
     // clientWrite(this.client, Buffer.from(ONEBYTEHEADER.concat([0xd8, 0x02, (this.fanStates.On ? 0x01 : 0x00), 0xc0])));
     clientWrite(this.client,
-      // Buffer.from(ONEBYTEHEADER.concat([0xa0, 0x04, (this.lightStates.On ? 0x01 : 0x00), 0xc0])));
-      Buffer.from('<Haiku;FAN;PWR;'.concat((this.lightStates.On ? 'ON' : 'OFF'), '>')));
+      Buffer.from('<' + this.Name + ';FAN;PWR;' + (this.fanStates.On ? 'ON' : 'OFF') + '>'));
 
   }
 
@@ -338,38 +347,41 @@ export class BigAssFans_haikuPlatformAccessory {
     return isOn;
   }
 
+  // value is percentage(homekit units).  Will convert to haiku units (0-7) for fan, but store (fanStates.RotationSpeed) in homekit units.
   async setRotationSpeed(value: CharacteristicValue) {
     let b: Buffer;
     if (value === 0) {
-      debugLog('characteristics', 2, 'Set Characteristic RotationSpeed -> ' + (value as number) + '%');
+      debugLog('characteristics', 2, 'Set Characteristic RotationSpeed -> ' + value + '%');
       this.fanStates.homeShieldUp = true;
       this.fanStates.RotationSpeed = 0;
-      const b1 = ONEBYTEHEADER.concat([0xf0, 0x02, 1, 0xc0]); // this one is for the device's memory
-      const b2 = ONEBYTEHEADER.concat([0xf0, 0x02, 0, 0xc0]); // this one will actually stop rotation
+      // const b1 = ONEBYTEHEADER.concat([0xf0, 0x02, 1, 0xc0]); // this one is for the device's memory
+      // const b2 = ONEBYTEHEADER.concat([0xf0, 0x02, 0, 0xc0]); // this one will actually stop rotation
+      const b1 = '<' + this.Name + ';FAN;SPD;SET;1' + '>';
+      const b2 = '<' + this.Name + ';FAN;SPD;SET;0' + '>';
       b = Buffer.from(b1.concat(b2));
     } else if (value === 100 && this.fanStates.homeShieldUp) {
       this.fanStates.homeShieldUp = false;
       this.fanStates.RotationSpeed = 1;
-      b = Buffer.from(ONEBYTEHEADER.concat([0xf0, 0x02, 1, 0xc0]));
+      // b = Buffer.from(ONEBYTEHEADER.concat([0xf0, 0x02, 1, 0xc0]));
+      b = Buffer.from('<' + this.Name + ';FAN;SPD;SET;1' + '>');
     } else {
       this.fanStates.homeShieldUp = false;
-      debugLog('characteristics', 2, 'Set Characteristic RotationSpeed -> ' + (value as number) + '%');
-      this.fanStates.RotationSpeed = Math.round(((value as number) / 100) * MAXFANSPEED);
-      if (this.fanStates.RotationSpeed > MAXFANSPEED) {
-        this.platform.log.warn('ignoring fan speed > ' + MAXFANSPEED + ': ' + this.fanStates.RotationSpeed);
+      debugLog('characteristics', 2, 'Set Characteristic RotationSpeed -> ' + value + '%');
+      this.fanStates.RotationSpeed = value as number;
+      let haikuUnits = Math.round((this.fanStates.RotationSpeed / 100.0) * MAXFANSPEED);
+      if (haikuUnits > MAXFANSPEED) {
+        this.platform.log.warn('fan speed > ' + MAXFANSPEED + ': ' + haikuUnits + ', limiting to ' + MAXFANSPEED);
+        haikuUnits = MAXFANSPEED;
       }
-      b = Buffer.from(ONEBYTEHEADER.concat([0xf0, 0x02, this.fanStates.RotationSpeed, 0xc0]));
+      // b = Buffer.from(ONEBYTEHEADER.concat([0xf0, 0x02, this.fanStates.RotationSpeed, 0xc0]));
+      b = Buffer.from('<' + this.Name + ';FAN;SPD;SET;' + haikuUnits + '>');
     }
     clientWrite(this.client, b);
   }
 
   async getRotationSpeed(): Promise<CharacteristicValue> {  // get speed as percentage
-    let rotationPercent = Math.round((this.fanStates.RotationSpeed / MAXFANSPEED) * 100);
-    if (rotationPercent === 0) {
-      rotationPercent = 1;
-    }
-    debugLog('characteristics', 4, 'Get Characteristic RotationSpeed -> ' + rotationPercent + '%');
-    return rotationPercent;
+    debugLog('characteristics', 4, 'Get Characteristic RotationSpeed -> ' + this.fanStates.RotationSpeed + '%');
+    return this.fanStates.RotationSpeed;
   }
 
   async setRotationDirection(value: CharacteristicValue) {
@@ -454,12 +466,17 @@ import net = require('net');
 * connect to the fan, send an initialization message, establish the error and data callbacks and start a keep-alive interval timer.
 */
 function networkSetup(platformAccessory: BigAssFans_haikuPlatformAccessory) {
+  hbLog.debug(platformAccessory.IP);
   platformAccessory.client = net.connect(31415, platformAccessory.IP, () => {
     debugLog('progress', 1, 'connected!');
     platformAccessory.client.setKeepAlive(true);
 
     // clientWrite(platformAccessory.client, Buffer.from([0xc0, 0x12, 0x02, 0x1a, 0x00, 0xc0]));
-    // clientWrite(platformAccessory.client, Buffer.from('hello haiku fan'));
+    const n = platformAccessory
+    clientWrite(platformAccessory.client, Buffer.from('<'.concat(platformAccessory.Name, ';FAN;PWR;GET>')));
+    clientWrite(platformAccessory.client, Buffer.from('<'.concat(platformAccessory.Name, ';LIGHT;PWR;GET>')));
+    clientWrite(platformAccessory.client, Buffer.from('<'.concat(platformAccessory.Name, ';LIGHT;LEVEL;ACTUAL;GET>')));
+    clientWrite(platformAccessory.client, Buffer.from('<'.concat(platformAccessory.Name, ';FAN;SPD;ACTUAL;GET>')));
   });
 
   let errHandler;
@@ -512,13 +529,13 @@ function networkSetup(platformAccessory: BigAssFans_haikuPlatformAccessory) {
       // clientWrite(platformAccessory.client, Buffer.from([0xc0, 0x12, 0x04, 0x1a, 0x02, 0x08, 0x03, 0xc0]));
     } else {
       debugLog('network', 3, 'client undefined in setInterval callback');
-    }
+    } 
   }, 60000);
 }
 
 function onData(platformAccessory: BigAssFans_haikuPlatformAccessory, data: Buffer) {
   debugLog('network', 11, 'raw data: ' + hexFormat(data));
-  debugLog('network', 8, 'accessory client got: ' + data.length + ' bytes');
+  debugLog('network', 8, 'accessory client got: ' + data.length + (data.length === 1 ? ' byte' : ' bytes'));
 
   // break data into individual chunks bracketed by '('(0x28) and ')'(0x29)
   let startIndex = -1;
@@ -562,9 +579,10 @@ function processFanMessage(platformAccessory: BigAssFans_haikuPlatformAccessory,
   // let fanName = messageArray[0];
   const component = messageArray[1];
   const componentProperty = messageArray[2];
+  const pA = platformAccessory;
 
   debugLog('newcode', 1, 'component: ' + component);
-  debugLog('newcode', 1, 'componentProperty: ' + component);
+  debugLog('newcode', 1, 'componentProperty: ' + componentProperty);
 
   if (component === 'LIGHT') {
     if (componentProperty === 'PWR') {
@@ -576,18 +594,26 @@ function processFanMessage(platformAccessory: BigAssFans_haikuPlatformAccessory,
       // if (value === 2) {  // this means the light is in Auto mode -  we don't handle it yet
       //   return;
       // }
-      const pA = platformAccessory;
       const onValue = (propertyValue === 'ON' ? true : false);
       pA.lightStates.On = onValue;
       debugLog('characteristics', 2, 'update Light On: ' + pA.lightStates.On);
       pA.lightBulbService.updateCharacteristic(pA.platform.Characteristic.On, pA.lightStates.On);
       // }
-    }
+    } else if (componentProperty === 'LEVEL') {
+      // ignore messageArray[3] which should be "CURR" or "ACTUAL" - don't know enough about Haiku to know what the difference is.
+      const propertyValue = +messageArray[4];
+      if (propertyValue !== 0) { // don't tell homebridge brightness is zero, it only confuses it.  It'll find out it's off soon enough.
+        pA.lightStates.homeShieldUp = false;
+        const levelPercent = Math.max(1, Math.round((propertyValue / MAXHAIKULIGHTLEVEL) * 100.0));
+        pA.lightStates.Brightness = levelPercent;
+        debugLog('characteristics', 2, 'update Brightness: ' + + levelPercent + '%');
+        pA.lightBulbService.updateCharacteristic(pA.platform.Characteristic.Brightness, levelPercent);      
+      }
+    }      
   } else if (component === 'FAN') {
     if (componentProperty === 'PWR') {
       const propertyValue = messageArray[3];
 
-      const pA = platformAccessory;
       // if (pA.showFanAutoSwitch) {
       //   pA.fanAutoSwitchOn = (value === 2) ? true: false;
       //   debugLog(['newcode', 'characteristics'], [1, 2], 'update fan auto: ' + pA.fanAutoSwitchOn);
@@ -605,7 +631,30 @@ function processFanMessage(platformAccessory: BigAssFans_haikuPlatformAccessory,
       pA.fanStates.On = onValue;
       debugLog(['newcode', 'characteristics'], [1, 2], 'update FanOn: ' + pA.fanStates.On);
       pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
+    } else if (componentProperty === 'SPD') {
+      // ignore messageArray[3] which should be "CURR" or "ACTUAL" - don't know enough about Haiku to know what the difference is.
+      const propertyValue = +messageArray[4];
+      if (propertyValue !== 0) { // don't tell homebridge speed is zero, it only confuses it.  It'll find out it's off in due course.
+        pA.fanStates.homeShieldUp = false;
+        const speedPercent = Math.max(1, Math.round((propertyValue / MAXFANSPEED) * 100.0));
+        pA.fanStates.RotationSpeed = speedPercent;
+        debugLog('characteristics', 2, 'update RotationSpeed: ' + speedPercent + '%');
+        pA.fanService.updateCharacteristic(pA.platform.Characteristic.RotationSpeed, speedPercent);      
+
+        if (!pA.fanStates.On) {
+            pA.fanStates.On = true;
+            debugLog(['newcode', 'characteristics'], [1, 2], 'update FanOn: ' + pA.fanStates.On + ' because (auto && speed > 0)');
+            pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
+        }
+      } else {
+        if (pA.fanStates.On) {
+          pA.fanStates.On = false;
+          debugLog(['newcode', 'characteristics'], [1, 2], 'update FanOn: ' + pA.fanStates.On + ' because (auto && speed == 0)');
+          pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
+        }
+      }
     }
+
     // }
   }
 
@@ -768,7 +817,7 @@ function getPropertiesArray():typeof properties {
   properties['0xa0, 0x03'] = [boolValue,      noop];                    //  fan motion sense
   // properties['0xa0, 0x04'] = [onOffAutoValue, lightOnState];            //  light
   properties['0xa8, 0x03'] = [varIntValue,    noop];                    //  fan motion timeout
-  properties['0xa8, 0x04'] = [intValue,       lightBrightness];         //  light brightness
+  // properties['0xa8, 0x04'] = [intValue,       lightBrightness];         //  light brightness
   properties['0xa8, 0x08'] = [intValue,       mysteryCode];             //  mystery
   properties['0xb0, 0x03'] = [boolValue,      noop];                    //  fan return to auto on/off
   properties['0xb0, 0x04'] = [intValue,       noop];                    //  brightness as level (0,1-16)
@@ -814,7 +863,7 @@ function getPropertiesArray():typeof properties {
   properties['0xe8, 0x03'] = [intValue,       mysteryCode];             //  mystery
   properties['0xe8, 0x04'] = [boolValue,      dimToWarmOnState];        //  light dim to warm
   properties['0xf0, 0x01'] = [intValue,       mysteryCode];             //  mystery
-  properties['0xf0, 0x02'] = [intValue,       fanRotationSpeed];        //  fan rotation speed
+  // properties['0xf0, 0x02'] = [intValue,       fanRotationSpeed];        //  fan rotation speed
   properties['0xf0, 0x03'] = [intValue,       mysteryCode];             //  mystery
   properties['0xf0, 0x04'] = [varIntValue,    noop];                    //  warmest color temperature
   properties['0xf8, 0x01'] = [intValue,       mysteryCode];             //  mystery
@@ -857,18 +906,18 @@ function lightColorTemperature(value: number|string, pA:BigAssFans_haikuPlatform
   pA.lightBulbService.updateCharacteristic(pA.platform.Characteristic.ColorTemperature, mireds);
 }
 
-function lightBrightness(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
-  if (value !== 0) { // don't tell homebridge brightness is zero, it only confuses it.  It'll find out it's off in soon enough.
-    /* if (pA.lightStates.homeShieldUp && value != 1) {
-      log.debug('uuunnnnnhhhh');
-    } else */{
-      pA.lightStates.homeShieldUp = false;
-      pA.lightStates.Brightness = (value as number);
-      debugLog('characteristics', 2, 'update Brightness: ' + pA.lightStates.Brightness);
-      pA.lightBulbService.updateCharacteristic(pA.platform.Characteristic.Brightness, pA.lightStates.Brightness);
-    }
-  }
-}
+// function lightBrightness(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
+//   if (value !== 0) { // don't tell homebridge brightness is zero, it only confuses it.  It'll find out it's off soon enough.
+//     /* if (pA.lightStates.homeShieldUp && value != 1) {
+//       log.debug('uuunnnnnhhhh');
+//     } else */{
+//       pA.lightStates.homeShieldUp = false;
+//       pA.lightStates.Brightness = (value as number);
+//       debugLog('characteristics', 2, 'update Brightness: ' + pA.lightStates.Brightness);
+//       pA.lightBulbService.updateCharacteristic(pA.platform.Characteristic.Brightness, pA.lightStates.Brightness);
+//     }
+//   }
+// }
 
 // function lightOnState(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
 //   if (value === 2) {  // this means the light is in Auto mode -  we don't handle it yet
@@ -911,25 +960,25 @@ function fanRotationDirection(value: number|string, pA:BigAssFans_haikuPlatformA
   pA.fanService.updateCharacteristic(pA.platform.Characteristic.RotationDirection, pA.fanStates.RotationDirection);
 }
 
-function fanRotationSpeed(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
-  if (value !== 0) { // don't tell homebridge speed is zero, it only confuses it.  It'll find out it's off in due course.
-    pA.fanStates.homeShieldUp = false;
-    pA.fanStates.RotationSpeed = (value as number);
-    debugLog('characteristics', 2, 'set speed to ' + pA.fanStates.RotationSpeed);
-    // convert to percentage for homekit
-    const speedPercent = Math.round((pA.fanStates.RotationSpeed / MAXFANSPEED) * 100);
-    debugLog('characteristics', 2, 'update RotationSpeed: ' + speedPercent + '%');
-    pA.fanService.updateCharacteristic(pA.platform.Characteristic.RotationSpeed, speedPercent);
+// function fanRotationSpeed(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
+//   if (value !== 0) { // don't tell homebridge speed is zero, it only confuses it.  It'll find out it's off in due course.
+//     pA.fanStates.homeShieldUp = false;
+//     pA.fanStates.RotationSpeed = (value as number);
+//     debugLog('characteristics', 2, 'set speed to ' + pA.fanStates.RotationSpeed);
+//     // convert to percentage for homekit
+//     const speedPercent = Math.round((pA.fanStates.RotationSpeed / MAXFANSPEED) * 100);
+//     debugLog('characteristics', 2, 'update RotationSpeed: ' + speedPercent + '%');
+//     pA.fanService.updateCharacteristic(pA.platform.Characteristic.RotationSpeed, speedPercent);
 
-    pA.fanStates.On = true;
-    debugLog(['newcode', 'characteristics'], [1, 2], 'update FanOn: ' + pA.fanStates.On + ' because (auto && speed > 0)');
-    pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
-  } else {
-    pA.fanStates.On = false;
-    debugLog(['newcode', 'characteristics'], [1, 2], 'update FanOn: ' + pA.fanStates.On + ' because (auto && speed == 0)');
-    pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
-  }
-}
+//     pA.fanStates.On = true;
+//     debugLog(['newcode', 'characteristics'], [1, 2], 'update FanOn: ' + pA.fanStates.On + ' because (auto && speed > 0)');
+//     pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
+//   } else {
+//     pA.fanStates.On = false;
+//     debugLog(['newcode', 'characteristics'], [1, 2], 'update FanOn: ' + pA.fanStates.On + ' because (auto && speed == 0)');
+//     pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
+//   }
+// }
 
 function currentTemperature(value: number|string, pA:BigAssFans_haikuPlatformAccessory) {
   if (value < -270 || value > 100) {
@@ -1216,8 +1265,9 @@ function clientWrite(client, b) {
   debugLog('network', 7, 'sending ' + b.toString('hex'));
   try  {
     client.write(b);
-  } catch {
+  } catch(e) {
     // hbLog.warn('clientWrite(' + client + ', ' + b.toString('hex') + ') failed');
     hbLog.warn('clientWrite(..., ' + b.toString('hex') + ') failed');
+    hbLog.warn((e as Error).message);
   }
 }
