@@ -2,7 +2,7 @@
   "private": false,
   "displayName": "Big Ass Fans Haiku",
   "name": "homebridge-haiku-bigassfans",
-  "version": "0.3.2-beta.2",
+  "version": "0.3.2-beta.3",
   "description": "Homebridge plugin for Big Ass Fans model Haiku.",
   "license": "MIT",
   "repository": {
