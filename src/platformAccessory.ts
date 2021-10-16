@@ -15,7 +15,7 @@ debugLevels['characteristics'] = 0;
 debugLevels['newcode'] = 0;
 
 const MAXFANSPEED = 7;
-const MAXHAIKULIGHTLEVEL = 16
+const MAXHAIKULIGHTLEVEL = 16;
 
 const MAXEBUGLEVEL = 99;
 
@@ -472,11 +472,10 @@ function networkSetup(platformAccessory: BigAssFans_haikuPlatformAccessory) {
     platformAccessory.client.setKeepAlive(true);
 
     // clientWrite(platformAccessory.client, Buffer.from([0xc0, 0x12, 0x02, 0x1a, 0x00, 0xc0]));
-    const n = platformAccessory
-    clientWrite(platformAccessory.client, Buffer.from('<'.concat(platformAccessory.Name, ';FAN;PWR;GET>')));
-    clientWrite(platformAccessory.client, Buffer.from('<'.concat(platformAccessory.Name, ';LIGHT;PWR;GET>')));
-    clientWrite(platformAccessory.client, Buffer.from('<'.concat(platformAccessory.Name, ';LIGHT;LEVEL;ACTUAL;GET>')));
-    clientWrite(platformAccessory.client, Buffer.from('<'.concat(platformAccessory.Name, ';FAN;SPD;ACTUAL;GET>')));
+    clientWrite(platformAccessory.client, Buffer.from('<' + platformAccessory.Name + ';FAN;PWR;GET>'));
+    clientWrite(platformAccessory.client, Buffer.from('<' + platformAccessory.Name + ';LIGHT;PWR;GET>'));
+    clientWrite(platformAccessory.client, Buffer.from('<' + platformAccessory.Name + ';LIGHT;LEVEL;ACTUAL;GET>'));
+    clientWrite(platformAccessory.client, Buffer.from('<' + platformAccessory.Name + ';FAN;SPD;ACTUAL;GET>'));
   });
 
   let errHandler;
@@ -529,7 +528,7 @@ function networkSetup(platformAccessory: BigAssFans_haikuPlatformAccessory) {
       // clientWrite(platformAccessory.client, Buffer.from([0xc0, 0x12, 0x04, 0x1a, 0x02, 0x08, 0x03, 0xc0]));
     } else {
       debugLog('network', 3, 'client undefined in setInterval callback');
-    } 
+    }
   }, 60000);
 }
 
@@ -607,9 +606,9 @@ function processFanMessage(platformAccessory: BigAssFans_haikuPlatformAccessory,
         const levelPercent = Math.max(1, Math.round((propertyValue / MAXHAIKULIGHTLEVEL) * 100.0));
         pA.lightStates.Brightness = levelPercent;
         debugLog('characteristics', 2, 'update Brightness: ' + + levelPercent + '%');
-        pA.lightBulbService.updateCharacteristic(pA.platform.Characteristic.Brightness, levelPercent);      
+        pA.lightBulbService.updateCharacteristic(pA.platform.Characteristic.Brightness, levelPercent);
       }
-    }      
+    }
   } else if (component === 'FAN') {
     if (componentProperty === 'PWR') {
       const propertyValue = messageArray[3];
@@ -639,12 +638,12 @@ function processFanMessage(platformAccessory: BigAssFans_haikuPlatformAccessory,
         const speedPercent = Math.max(1, Math.round((propertyValue / MAXFANSPEED) * 100.0));
         pA.fanStates.RotationSpeed = speedPercent;
         debugLog('characteristics', 2, 'update RotationSpeed: ' + speedPercent + '%');
-        pA.fanService.updateCharacteristic(pA.platform.Characteristic.RotationSpeed, speedPercent);      
+        pA.fanService.updateCharacteristic(pA.platform.Characteristic.RotationSpeed, speedPercent);
 
         if (!pA.fanStates.On) {
-            pA.fanStates.On = true;
-            debugLog(['newcode', 'characteristics'], [1, 2], 'update FanOn: ' + pA.fanStates.On + ' because (auto && speed > 0)');
-            pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
+          pA.fanStates.On = true;
+          debugLog(['newcode', 'characteristics'], [1, 2], 'update FanOn: ' + pA.fanStates.On + ' because (auto && speed > 0)');
+          pA.fanService.updateCharacteristic(pA.platform.Characteristic.On, pA.fanStates.On);
         }
       } else {
         if (pA.fanStates.On) {
